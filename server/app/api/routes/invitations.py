@@ -1,0 +1,37 @@
+import uuid
+
+from fastapi import APIRouter, Depends
+
+from app.api.dependencies import get_current_user_id, get_invitation_service
+from app.schemas.invitation import InvitationCreate, InvitationResponse, InvitationAccept
+from app.services.invitation_service import InvitationService
+
+router = APIRouter(prefix="/invitations", tags=["Invitations"])
+
+
+@router.post("/workspace/{workspace_id}", response_model=InvitationResponse, status_code=201)
+async def create_invitation(
+    workspace_id: uuid.UUID,
+    data: InvitationCreate,
+    user_id: uuid.UUID = Depends(get_current_user_id),
+    service: InvitationService = Depends(get_invitation_service),
+):
+    return await service.create_invitation(workspace_id, data, user_id)
+
+
+@router.post("/accept", response_model=InvitationResponse)
+async def accept_invitation(
+    data: InvitationAccept,
+    user_id: uuid.UUID = Depends(get_current_user_id),
+    service: InvitationService = Depends(get_invitation_service),
+):
+    return await service.accept_invitation(data.token, user_id)
+
+
+@router.get("/workspace/{workspace_id}", response_model=list[InvitationResponse])
+async def list_invitations(
+    workspace_id: uuid.UUID,
+    user_id: uuid.UUID = Depends(get_current_user_id),
+    service: InvitationService = Depends(get_invitation_service),
+):
+    return await service.get_workspace_invitations(workspace_id, user_id)

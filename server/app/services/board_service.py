@@ -1,0 +1,226 @@
+import uuid
+
+from app.core.exceptions import NotFoundError, ForbiddenError
+from app.repositories.board_repo import BoardRepository
+from app.repositories.workspace_repo import WorkspaceRepository
+from app.schemas.board import (
+    BoardFullResponse,
+    ColumnCreate,
+    ColumnUpdate,
+    ColumnResponse,
+    ColumnWithTasksResponse,
+    TaskCreate,
+    TaskUpdate,
+    TaskMove,
+    TaskResponse,
+    AnalyticsResponse,
+)
+
+
+class BoardService:
+    def __init__(self, board_repo: BoardRepository, workspace_repo: WorkspaceRepository):
+        self.board_repo = board_repo
+        self.workspace_repo = workspace_repo
+
+    async def _check_membership(self, workspace_id: uuid.UUID, user_id: uuid.UUID) -> None:
+        member = await self.workspace_repo.get_member(workspace_id, user_id)
+        if not member:
+            raise ForbiddenError("Not a member of this workspace")
+
+    async def get_board(self, workspace_id: uuid.UUID, user_id: uuid.UUID) -> BoardFullResponse:
+        await self._check_membership(workspace_id, user_id)
+        board = await self.board_repo.get_by_workspace(workspace_id)
+        if not board:
+            board = await self.board_repo.create(workspace_id)
+
+        full_board = await self.board_repo.get_full_board(board.id)
+        columns = []
+        for col in full_board.columns:
+            tasks = [TaskResponse.model_validate(t) for t in col.tasks]
+            columns.append(
+                ColumnWithTasksResponse(
+                    id=col.id,
+                    board_id=col.board_id,
+                    name=col.name,
+                    position=col.position,
+                    created_at=col.created_at,
+                    tasks=tasks,
+                )
+            )
+        return BoardFullResponse(
+            id=full_board.id,
+            workspace_id=full_board.workspace_id,
+            name=full_board.name,
+            created_at=full_board.created_at,
+            columns=columns,
+        )
+
+    # Column operations
+    async def create_column(
+        self, workspace_id: uuid.UUID, data: ColumnCreate, user_id: uuid.UUID
+    ) -> ColumnResponse:
+        await self._check_membership(workspace_id, user_id)
+        board = await self.board_repo.get_by_workspace(workspace_id)
+        if not board:
+            raise NotFoundError("Board not found")
+
+        position = data.position
+        if position is None:
+            position = await self.board_repo.get_max_column_position(board.id) + 1
+
+        column = await self.board_repo.create_column(board.id, data.name, position)
+        return ColumnResponse.model_validate(column)
+
+    async def update_column(
+        self, workspace_id: uuid.UUID, column_id: uuid.UUID, data: ColumnUpdate, user_id: uuid.UUID
+    ) -> ColumnResponse:
+        await self._check_membership(workspace_id, user_id)
+        column = await self.board_repo.get_column(column_id)
+        if not column:
+            raise NotFoundError("Column not found")
+
+        kwargs = {}
+        if data.name is not None:
+            kwargs["name"] = data.name
+        if data.position is not None:
+            kwargs["position"] = data.position
+
+        updated = await self.board_repo.update_column(column, **kwargs)
+        return ColumnResponse.model_validate(updated)
+
+    async def delete_column(
+        self, workspace_id: uuid.UUID, column_id: uuid.UUID, user_id: uuid.UUID
+    ) -> None:
+        await self._check_membership(workspace_id, user_id)
+        column = await self.board_repo.get_column(column_id)
+        if not column:
+            raise NotFoundError("Column not found")
+        await self.board_repo.delete_column(column_id)
+
+    async def reorder_columns(
+        self, workspace_id: uuid.UUID, column_ids: list[uuid.UUID], user_id: uuid.UUID
+    ) -> list[ColumnResponse]:
+        await self._check_membership(workspace_id, user_id)
+        result = []
+        for position, col_id in enumerate(column_ids):
+            column = await self.board_repo.get_column(col_id)
+            if column:
+                updated = await self.board_repo.update_column(column, position=position)
+                result.append(ColumnResponse.model_validate(updated))
+        return result
+
+    # Task operations
+    async def create_task(
+        self, workspace_id: uuid.UUID, column_id: uuid.UUID, data: TaskCreate, user_id: uuid.UUID
+    ) -> TaskResponse:
+        await self._check_membership(workspace_id, user_id)
+        column = await self.board_repo.get_column(column_id)
+        if not column:
+            raise NotFoundError("Column not found")
+
+        position = await self.board_repo.get_max_task_position(column_id) + 1
+        task = await self.board_repo.create_task(
+            column_id=column_id,
+            title=data.title,
+            description=data.description,
+            priority=data.priority,
+            deadline=data.deadline,
+            assigned_to=data.assigned_to,
+            created_by=user_id,
+            position=position,
+        )
+        return TaskResponse.model_validate(task)
+
+    async def update_task(
+        self, workspace_id: uuid.UUID, task_id: uuid.UUID, data: TaskUpdate, user_id: uuid.UUID
+    ) -> TaskResponse:
+        await self._check_membership(workspace_id, user_id)
+        task = await self.board_repo.get_task(task_id)
+        if not task:
+            raise NotFoundError("Task not found")
+
+        kwargs = {}
+        for field in ["title", "description", "priority", "is_completed", "deadline", "assigned_to"]:
+            value = getattr(data, field)
+            if value is not None:
+                kwargs[field] = value
+
+        updated = await self.board_repo.update_task(task, **kwargs)
+        return TaskResponse.model_validate(updated)
+
+    async def delete_task(
+        self, workspace_id: uuid.UUID, task_id: uuid.UUID, user_id: uuid.UUID
+    ) -> None:
+        await self._check_membership(workspace_id, user_id)
+        task = await self.board_repo.get_task(task_id)
+        if not task:
+            raise NotFoundError("Task not found")
+        await self.board_repo.delete_task(task_id)
+
+    async def move_task(
+        self, workspace_id: uuid.UUID, task_id: uuid.UUID, data: TaskMove, user_id: uuid.UUID
+    ) -> TaskResponse:
+        await self._check_membership(workspace_id, user_id)
+        task = await self.board_repo.get_task(task_id)
+        if not task:
+            raise NotFoundError("Task not found")
+
+        target_column = await self.board_repo.get_column(data.column_id)
+        if not target_column:
+            raise NotFoundError("Target column not found")
+
+        updated = await self.board_repo.update_task(
+            task, column_id=data.column_id, position=data.position
+        )
+        return TaskResponse.model_validate(updated)
+
+    # Search & filter
+    async def search_tasks(
+        self,
+        workspace_id: uuid.UUID,
+        user_id: uuid.UUID,
+        query: str | None = None,
+        priority: str | None = None,
+        is_completed: bool | None = None,
+        has_deadline: bool | None = None,
+    ) -> list[TaskResponse]:
+        await self._check_membership(workspace_id, user_id)
+        board = await self.board_repo.get_by_workspace(workspace_id)
+        if not board:
+            return []
+        tasks = await self.board_repo.search_tasks(
+            board.id, query=query, priority=priority, is_completed=is_completed, has_deadline=has_deadline
+        )
+        return [TaskResponse.model_validate(t) for t in tasks]
+
+    # Analytics
+    async def get_analytics(self, workspace_id: uuid.UUID, user_id: uuid.UUID) -> AnalyticsResponse:
+        await self._check_membership(workspace_id, user_id)
+        board = await self.board_repo.get_by_workspace(workspace_id)
+        if not board:
+            return AnalyticsResponse(
+                total_tasks=0, completed_tasks=0, completion_rate=0.0, by_column={}, by_priority={}
+            )
+
+        full_board = await self.board_repo.get_full_board(board.id)
+        all_tasks = []
+        by_column = {}
+        for col in full_board.columns:
+            by_column[col.name] = len(col.tasks)
+            all_tasks.extend(col.tasks)
+
+        total = len(all_tasks)
+        completed = sum(1 for t in all_tasks if t.is_completed)
+        rate = (completed / total * 100) if total > 0 else 0.0
+
+        by_priority = {}
+        for t in all_tasks:
+            by_priority[t.priority] = by_priority.get(t.priority, 0) + 1
+
+        return AnalyticsResponse(
+            total_tasks=total,
+            completed_tasks=completed,
+            completion_rate=round(rate, 1),
+            by_column=by_column,
+            by_priority=by_priority,
+        )
