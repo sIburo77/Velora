@@ -38,6 +38,8 @@ function workspaceReducer(state, action) {
         currentWorkspace:
           state.currentWorkspace?.id === action.payload ? null : state.currentWorkspace,
       };
+    case 'RESET':
+      return initialState;
     case 'SET_LOADING':
       return { ...state, loading: action.payload };
     default:
@@ -52,7 +54,12 @@ export function WorkspaceProvider({ children }) {
     dispatch({ type: 'SET_LOADING', payload: true });
     const data = await api.getWorkspaces();
     dispatch({ type: 'SET_WORKSPACES', payload: data });
-    if (data.length > 0 && !state.currentWorkspace) {
+    if (data.length === 0) {
+      dispatch({ type: 'SET_CURRENT', payload: null });
+      localStorage.removeItem('velora_workspace');
+      return;
+    }
+    if (data.length > 0) {
       const saved = localStorage.getItem('velora_workspace');
       const found = saved ? data.find(w => w.id === saved) : null;
       dispatch({ type: 'SET_CURRENT', payload: found || data[0] });
@@ -105,6 +112,10 @@ export function WorkspaceProvider({ children }) {
         deleteWorkspace,
         fetchMembers,
         removeMember,
+        reset: () => {
+          dispatch({ type: 'RESET' });
+          localStorage.removeItem('velora_workspace');
+        },
       }}
     >
       {children}

@@ -28,6 +28,23 @@ async def accept_invitation(
     return await service.accept_invitation(data.token, user_id)
 
 
+@router.post("/decline", response_model=InvitationResponse)
+async def decline_invitation(
+    data: InvitationAccept,
+    user_id: uuid.UUID = Depends(get_current_user_id),
+    service: InvitationService = Depends(get_invitation_service),
+):
+    return await service.decline_invitation(data.token, user_id)
+
+
+@router.get("/my", response_model=list[InvitationResponse])
+async def my_pending_invitations(
+    user_id: uuid.UUID = Depends(get_current_user_id),
+    service: InvitationService = Depends(get_invitation_service),
+):
+    return await service.get_pending_for_user(user_id)
+
+
 @router.get("/workspace/{workspace_id}", response_model=list[InvitationResponse])
 async def list_invitations(
     workspace_id: uuid.UUID,

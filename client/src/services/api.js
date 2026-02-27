@@ -71,7 +71,9 @@ class ApiService {
   // Invitations
   createInvitation(wsId, data) { return this.post(`/invitations/workspace/${wsId}`, data); }
   acceptInvitation(data) { return this.post('/invitations/accept', data); }
+  declineInvitation(data) { return this.post('/invitations/decline', data); }
   getInvitations(wsId) { return this.get(`/invitations/workspace/${wsId}`); }
+  getMyInvitations() { return this.get('/invitations/my'); }
 
   // Board
   getBoard(wsId) { return this.get(`/workspaces/${wsId}/board`); }

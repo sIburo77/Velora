@@ -26,13 +26,14 @@ export default function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
-  const { workspaces, currentWorkspace, selectWorkspace, createWorkspace } = useWorkspace();
+  const { workspaces, currentWorkspace, selectWorkspace, createWorkspace, reset: resetWorkspace } = useWorkspace();
   const { success, error } = useToast();
   const [showWs, setShowWs] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [newWsName, setNewWsName] = useState('');
 
   const handleLogout = () => {
+    resetWorkspace();
     logout();
     navigate('/');
   };

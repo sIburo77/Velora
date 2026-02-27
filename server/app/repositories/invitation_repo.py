@@ -32,6 +32,15 @@ class InvitationRepository:
         )
         return result.scalar_one_or_none()
 
+    async def get_pending_by_email(self, email: str) -> list[Invitation]:
+        result = await self.db.execute(
+            select(Invitation).where(
+                Invitation.email == email,
+                Invitation.status == "pending",
+            )
+        )
+        return result.scalars().all()
+
     async def create(self, **kwargs) -> Invitation:
         invitation = Invitation(**kwargs)
         self.db.add(invitation)

@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Kanban, BarChart3, Users, Clock, Plus, ArrowRight } from 'lucide-react';
+import { Kanban, BarChart3, Users, Clock, Plus, ArrowRight, Mail, Check, X } from 'lucide-react';
 import { useWorkspace } from '../context/WorkspaceContext';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import api from '../services/api';
 import Loader from '../components/ui/Loader';
 
@@ -10,12 +11,36 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { currentWorkspace, workspaces, fetchWorkspaces } = useWorkspace();
+  const { success, error } = useToast();
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [pendingInvitations, setPendingInvitations] = useState([]);
 
   useEffect(() => {
     fetchWorkspaces().finally(() => setLoading(false));
+    api.getMyInvitations().then(setPendingInvitations).catch(() => {});
   }, []);
+
+  const acceptInvite = async (token) => {
+    try {
+      await api.acceptInvitation({ token });
+      setPendingInvitations(prev => prev.filter(i => i.token !== token));
+      await fetchWorkspaces();
+      success('Invitation accepted!');
+    } catch (err) {
+      error(err.message);
+    }
+  };
+
+  const declineInvite = async (token) => {
+    try {
+      await api.declineInvitation({ token });
+      setPendingInvitations(prev => prev.filter(i => i.token !== token));
+      success('Invitation declined');
+    } catch (err) {
+      error(err.message);
+    }
+  };
 
   useEffect(() => {
     if (currentWorkspace) {
@@ -25,10 +50,42 @@ export default function Dashboard() {
 
   if (loading) return <Loader />;
 
+  const InvitationBanner = () => {
+    if (pendingInvitations.length === 0) return null;
+    return (
+      <div className="mb-6 space-y-3">
+        <h3 className="text-sm font-medium text-slate-400 flex items-center gap-2">
+          <Mail size={16} /> Pending Invitations
+        </h3>
+        {pendingInvitations.map((inv) => (
+          <div key={inv.id} className="card flex items-center justify-between py-4 border-violet-500/20">
+            <div>
+              <p className="font-medium">
+                You're invited to <span className="text-violet-400">{inv.workspace_name || 'a workspace'}</span>
+              </p>
+              <p className="text-sm text-slate-500">
+                Expires {new Date(inv.expires_at).toLocaleDateString()}
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={() => acceptInvite(inv.token)} className="btn-primary py-2 text-sm flex items-center gap-1">
+                <Check size={16} /> Accept
+              </button>
+              <button onClick={() => declineInvite(inv.token)} className="btn-secondary py-2 text-sm flex items-center gap-1">
+                <X size={16} /> Decline
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   if (!currentWorkspace) {
     return (
-      <div className="flex flex-col items-center justify-center h-full">
-        <div className="card text-center max-w-md">
+      <div className="max-w-2xl mx-auto mt-12">
+        <InvitationBanner />
+        <div className="card text-center">
           <Kanban size={48} className="mx-auto text-violet-400 mb-4" />
           <h2 className="text-xl font-semibold mb-2">No Workspace Yet</h2>
           <p className="text-slate-400 mb-6">Create your first workspace to get started</p>
@@ -76,6 +133,8 @@ export default function Dashboard() {
         </h1>
         <p className="text-slate-400">Here's what's happening in {currentWorkspace.name}</p>
       </div>
+
+      <InvitationBanner />
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

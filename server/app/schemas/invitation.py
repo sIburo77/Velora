@@ -16,6 +16,7 @@ class InvitationResponse(BaseModel):
     status: str
     created_at: datetime
     expires_at: datetime
+    workspace_name: str | None = None
 
     model_config = {"from_attributes": True}
 

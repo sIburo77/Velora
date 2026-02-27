@@ -78,6 +78,18 @@ class InvitationService:
         updated = await self.invitation_repo.update_status(invitation, "accepted")
         return InvitationResponse.model_validate(updated)
 
+    async def decline_invitation(self, token: str, user_id: uuid.UUID) -> InvitationResponse:
+        invitation = await self.invitation_repo.get_by_token(token)
+        if not invitation:
+            raise NotFoundError("Invitation not found")
+        if invitation.status != "pending":
+            raise BadRequestError("Invitation already processed")
+        user = await self.user_repo.get_by_id(user_id)
+        if not user or user.email != invitation.email:
+            raise ForbiddenError("This invitation was sent to a different email")
+        updated = await self.invitation_repo.update_status(invitation, "declined")
+        return InvitationResponse.model_validate(updated)
+
     async def get_workspace_invitations(
         self, workspace_id: uuid.UUID, user_id: uuid.UUID
     ) -> list[InvitationResponse]:
@@ -87,7 +99,17 @@ class InvitationService:
         invitations = await self.invitation_repo.get_by_workspace(workspace_id)
         return [InvitationResponse.model_validate(inv) for inv in invitations]
 
-    async def get_pending_for_user(self, email: str) -> list[InvitationResponse]:
-        from sqlalchemy import select
-        invitations = []
-        return invitations
+    async def get_pending_for_user(self, user_id: uuid.UUID) -> list[InvitationResponse]:
+        user = await self.user_repo.get_by_id(user_id)
+        if not user:
+            raise NotFoundError("User not found")
+        invitations = await self.invitation_repo.get_pending_by_email(user.email)
+        now = datetime.now(timezone.utc)
+        result = []
+        for inv in invitations:
+            if inv.expires_at > now:
+                ws = await self.workspace_repo.get_by_id(inv.workspace_id)
+                resp = InvitationResponse.model_validate(inv)
+                resp.workspace_name = ws.name if ws else None
+                result.append(resp)
+        return result
