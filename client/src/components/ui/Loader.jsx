@@ -4,7 +4,7 @@ export default function Loader({ size = 'md' }) {
   return (
     <div className="flex items-center justify-center p-8">
       <div
-        className={`${sizes[size]} border-2 border-slate-700 border-t-violet-500 rounded-full animate-spin`}
+        className={`${sizes[size]} border-2 border-[var(--color-border)] border-t-violet-500 rounded-full animate-spin`}
       />
     </div>
   );

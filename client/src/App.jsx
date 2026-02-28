@@ -8,6 +8,8 @@ import Toast from './components/ui/Toast';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import VerifyEmail from './pages/VerifyEmail';
+import CompleteRegistration from './pages/CompleteRegistration';
 import Dashboard from './pages/Dashboard';
 import Board from './pages/Board';
 import Analytics from './pages/Analytics';
@@ -25,6 +27,8 @@ export default function App() {
               <Route path="/" element={<Landing />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/verify" element={<VerifyEmail />} />
+              <Route path="/complete-registration" element={<CompleteRegistration />} />
 
               {/* Private */}
               <Route

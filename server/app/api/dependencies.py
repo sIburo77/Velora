@@ -11,11 +11,13 @@ from app.repositories.user_repo import UserRepository
 from app.repositories.workspace_repo import WorkspaceRepository
 from app.repositories.invitation_repo import InvitationRepository
 from app.repositories.board_repo import BoardRepository
+from app.repositories.verification_repo import VerificationRepository
 from app.services.auth_service import AuthService
 from app.services.user_service import UserService
 from app.services.workspace_service import WorkspaceService
 from app.services.invitation_service import InvitationService
 from app.services.board_service import BoardService
+from app.services.email_service import EmailService
 
 security = HTTPBearer()
 
@@ -49,9 +51,16 @@ def get_board_repo(db: AsyncSession = Depends(get_db)) -> BoardRepository:
     return BoardRepository(db)
 
 
+def get_verification_repo(db: AsyncSession = Depends(get_db)) -> VerificationRepository:
+    return VerificationRepository(db)
+
+
 # Services
-def get_auth_service(user_repo: UserRepository = Depends(get_user_repo)) -> AuthService:
-    return AuthService(user_repo)
+def get_auth_service(
+    user_repo: UserRepository = Depends(get_user_repo),
+    verification_repo: VerificationRepository = Depends(get_verification_repo),
+) -> AuthService:
+    return AuthService(user_repo, verification_repo, EmailService())
 
 
 def get_user_service(user_repo: UserRepository = Depends(get_user_repo)) -> UserService:

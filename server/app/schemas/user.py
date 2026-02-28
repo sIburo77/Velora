@@ -32,3 +32,33 @@ class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
     user: UserResponse
+
+
+# Multi-step registration schemas
+
+class EmailRequest(BaseModel):
+    email: EmailStr
+
+
+class VerifyCodeRequest(BaseModel):
+    email: EmailStr
+    code: str
+
+
+class CompleteRegistrationRequest(BaseModel):
+    email: EmailStr
+    name: str
+    password: str
+    registration_token: str
+
+
+class GoogleAuthRequest(BaseModel):
+    credential: str
+
+
+class RegistrationTokenResponse(BaseModel):
+    registration_token: str
+
+
+class MessageResponse(BaseModel):
+    message: str

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   LayoutDashboard,
   Kanban,
@@ -9,24 +10,30 @@ import {
   Plus,
   ChevronDown,
   Users,
+  Sun,
+  Moon,
+  Globe,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useWorkspace } from '../../context/WorkspaceContext';
+import { useTheme } from '../../context/ThemeContext';
 import Modal from '../ui/Modal';
 import { useToast } from '../../context/ToastContext';
 
 const navItems = [
-  { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
-  { icon: Kanban, label: 'Board', path: '/board' },
-  { icon: BarChart3, label: 'Analytics', path: '/analytics' },
-  { icon: Settings, label: 'Settings', path: '/settings' },
+  { icon: LayoutDashboard, labelKey: 'sidebar.dashboard', path: '/dashboard' },
+  { icon: Kanban, labelKey: 'sidebar.board', path: '/board' },
+  { icon: BarChart3, labelKey: 'sidebar.analytics', path: '/analytics' },
+  { icon: Settings, labelKey: 'sidebar.settings', path: '/settings' },
 ];
 
 export default function Sidebar() {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
   const { workspaces, currentWorkspace, selectWorkspace, createWorkspace, reset: resetWorkspace } = useWorkspace();
+  const { theme, toggleTheme } = useTheme();
   const { success, error } = useToast();
   const [showWs, setShowWs] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
@@ -45,15 +52,21 @@ export default function Sidebar() {
       await createWorkspace({ name: newWsName.trim() });
       setNewWsName('');
       setShowCreate(false);
-      success('Workspace created');
+      success(t('settings.wsCreated'));
     } catch (err) {
       error(err.message);
     }
   };
 
+  const toggleLang = () => {
+    const newLang = i18n.language === 'ru' ? 'en' : 'ru';
+    i18n.changeLanguage(newLang);
+    localStorage.setItem('velora_lang', newLang);
+  };
+
   return (
     <>
-      <aside className="w-64 h-screen flex flex-col border-r border-white/5 bg-dark-50">
+      <aside className="w-64 h-screen flex flex-col border-r border-[var(--color-border)] bg-surface-sidebar">
         {/* Logo */}
         <div className="p-6 pb-4">
           <h1 className="text-xl font-bold glow-text">Velora</h1>
@@ -66,22 +79,22 @@ export default function Sidebar() {
             className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl glass glass-hover transition"
           >
             <div className="flex items-center gap-2 min-w-0">
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500 to-blue-500 flex items-center justify-center text-xs font-bold shrink-0">
+              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500 to-blue-500 flex items-center justify-center text-xs font-bold text-white shrink-0">
                 {currentWorkspace?.name?.[0]?.toUpperCase() || 'W'}
               </div>
-              <span className="text-sm font-medium truncate">{currentWorkspace?.name || 'Select'}</span>
+              <span className="text-sm font-medium truncate">{currentWorkspace?.name || t('sidebar.select')}</span>
             </div>
-            <ChevronDown size={16} className={`transition ${showWs ? 'rotate-180' : ''}`} />
+            <ChevronDown size={16} className={`transition text-content-muted ${showWs ? 'rotate-180' : ''}`} />
           </button>
 
           {showWs && (
-            <div className="mt-1 rounded-xl glass border border-white/10 overflow-hidden">
+            <div className="mt-1 rounded-xl glass border border-[var(--color-border-hover)] overflow-hidden">
               {workspaces.map((ws) => (
                 <button
                   key={ws.id}
                   onClick={() => { selectWorkspace(ws); setShowWs(false); }}
-                  className={`w-full text-left px-3 py-2 text-sm hover:bg-white/5 transition ${
-                    ws.id === currentWorkspace?.id ? 'text-violet-400' : 'text-slate-300'
+                  className={`w-full text-left px-3 py-2 text-sm hover:bg-surface-glass transition ${
+                    ws.id === currentWorkspace?.id ? 'text-violet-400' : 'text-content-secondary'
                   }`}
                 >
                   {ws.name}
@@ -89,9 +102,9 @@ export default function Sidebar() {
               ))}
               <button
                 onClick={() => { setShowCreate(true); setShowWs(false); }}
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-violet-400 hover:bg-white/5 transition border-t border-white/5"
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-violet-400 hover:bg-surface-glass transition border-t border-[var(--color-border)]"
               >
-                <Plus size={14} /> New Workspace
+                <Plus size={14} /> {t('sidebar.newWorkspace')}
               </button>
             </div>
           )}
@@ -99,7 +112,7 @@ export default function Sidebar() {
 
         {/* Navigation */}
         <nav className="flex-1 px-4 space-y-1">
-          {navItems.map(({ icon: Icon, label, path }) => {
+          {navItems.map(({ icon: Icon, labelKey, path }) => {
             const isActive = location.pathname === path;
             return (
               <button
@@ -108,46 +121,60 @@ export default function Sidebar() {
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition ${
                   isActive
                     ? 'bg-violet-500/15 text-violet-400'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
+                    : 'text-content-secondary hover:text-content-primary hover:bg-surface-glass'
                 }`}
               >
                 <Icon size={18} />
-                {label}
+                {t(labelKey)}
               </button>
             );
           })}
         </nav>
 
         {/* User */}
-        <div className="p-4 border-t border-white/5">
+        <div className="p-4 border-t border-[var(--color-border)]">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center text-xs font-bold">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center text-xs font-bold text-white">
               {user?.name?.[0]?.toUpperCase()}
             </div>
             <div className="min-w-0">
               <p className="text-sm font-medium truncate">{user?.name}</p>
-              <p className="text-xs text-slate-500 truncate">{user?.email}</p>
+              <p className="text-xs text-content-muted truncate">{user?.email}</p>
             </div>
           </div>
           <button
-            onClick={handleLogout}
-            className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition"
+            onClick={toggleTheme}
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-content-secondary hover:text-violet-400 hover:bg-violet-500/10 transition"
           >
-            <LogOut size={16} /> Log out
+            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+            {theme === 'dark' ? t('common.lightMode') : t('common.darkMode')}
+          </button>
+          <button
+            onClick={toggleLang}
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-content-secondary hover:text-violet-400 hover:bg-violet-500/10 transition"
+          >
+            <Globe size={16} />
+            {i18n.language === 'ru' ? 'English' : 'Русский'}
+          </button>
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-content-secondary hover:text-red-400 hover:bg-red-500/10 transition"
+          >
+            <LogOut size={16} /> {t('sidebar.logout')}
           </button>
         </div>
       </aside>
 
-      <Modal isOpen={showCreate} onClose={() => setShowCreate(false)} title="Create Workspace">
+      <Modal isOpen={showCreate} onClose={() => setShowCreate(false)} title={t('settings.createWorkspace')}>
         <form onSubmit={handleCreate}>
           <input
             className="input-field mb-4"
-            placeholder="Workspace name"
+            placeholder={t('settings.wsName')}
             value={newWsName}
             onChange={(e) => setNewWsName(e.target.value)}
             autoFocus
           />
-          <button type="submit" className="btn-primary w-full">Create</button>
+          <button type="submit" className="btn-primary w-full">{t('common.create')}</button>
         </form>
       </Modal>
     </>

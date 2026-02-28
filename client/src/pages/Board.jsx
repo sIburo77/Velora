@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Plus, MoreHorizontal, Trash2, Edit3, GripVertical,
   Search, Filter, Calendar, Flag, CheckCircle, Circle, X, ChevronDown,
@@ -18,6 +19,7 @@ const priorityColors = {
 const priorityDots = { high: 'bg-red-500', medium: 'bg-amber-500', low: 'bg-emerald-500' };
 
 export default function Board() {
+  const { t } = useTranslation();
   const { currentWorkspace } = useWorkspace();
   const { success, error } = useToast();
   const [board, setBoard] = useState(null);
@@ -41,7 +43,7 @@ export default function Board() {
       const data = await api.getBoard(currentWorkspace.id);
       setBoard(data);
     } catch (err) {
-      error('Failed to load board');
+      error(t('board.failedLoad'));
     } finally {
       setLoading(false);
     }
@@ -61,7 +63,7 @@ export default function Board() {
       setNewColName('');
       setShowAddCol(false);
       fetchBoard();
-      success('Column created');
+      success(t('board.columnCreated'));
     } catch (err) {
       error(err.message);
     }
@@ -71,7 +73,7 @@ export default function Board() {
     try {
       await api.deleteColumn(currentWorkspace.id, colId);
       fetchBoard();
-      success('Column deleted');
+      success(t('board.columnDeleted'));
     } catch (err) {
       error(err.message);
     }
@@ -112,10 +114,10 @@ export default function Board() {
     try {
       if (taskModal.task) {
         await api.updateTask(currentWorkspace.id, taskModal.task.id, data);
-        success('Task updated');
+        success(t('board.taskUpdated'));
       } else {
         await api.createTask(currentWorkspace.id, taskModal.columnId, data);
-        success('Task created');
+        success(t('board.taskCreated'));
       }
       setTaskModal({ open: false, columnId: null, task: null });
       fetchBoard();
@@ -128,7 +130,7 @@ export default function Board() {
     try {
       await api.deleteTask(currentWorkspace.id, taskId);
       fetchBoard();
-      success('Task deleted');
+      success(t('board.taskDeleted'));
     } catch (err) {
       error(err.message);
     }
@@ -199,20 +201,20 @@ export default function Board() {
   if (loading) return <Loader />;
 
   if (!currentWorkspace) {
-    return <div className="text-center text-slate-400 mt-20">Select a workspace to view the board</div>;
+    return <div className="text-center text-content-secondary mt-20">{t('board.selectWorkspace')}</div>;
   }
 
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
-        <h1 className="text-2xl font-bold">{board?.name || 'Board'}</h1>
+        <h1 className="text-2xl font-bold">{board?.name || t('board.board')}</h1>
         <div className="flex items-center gap-3">
           <div className="relative">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-content-muted" />
             <input
               className="input-field pl-9 py-2 text-sm w-56"
-              placeholder="Search tasks..."
+              placeholder={t('board.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -225,7 +227,7 @@ export default function Board() {
             <Filter size={16} />
           </button>
           <button onClick={() => setShowAddCol(true)} className="btn-primary py-2 text-sm">
-            <Plus size={16} className="inline mr-1" /> Column
+            <Plus size={16} className="inline mr-1" /> {t('board.column')}
           </button>
         </div>
       </div>
@@ -238,24 +240,24 @@ export default function Board() {
             value={filterPriority}
             onChange={(e) => setFilterPriority(e.target.value)}
           >
-            <option value="">All priorities</option>
-            <option value="high">High</option>
-            <option value="medium">Medium</option>
-            <option value="low">Low</option>
+            <option value="">{t('board.allPriorities')}</option>
+            <option value="high">{t('board.high')}</option>
+            <option value="medium">{t('board.medium')}</option>
+            <option value="low">{t('board.low')}</option>
           </select>
           <select
             className="input-field py-2 text-sm w-40"
             value={filterCompleted}
             onChange={(e) => setFilterCompleted(e.target.value)}
           >
-            <option value="">All status</option>
-            <option value="true">Completed</option>
-            <option value="false">Active</option>
+            <option value="">{t('board.allStatus')}</option>
+            <option value="true">{t('board.completedFilter')}</option>
+            <option value="false">{t('board.activeFilter')}</option>
           </select>
-          <button onClick={handleSearch} className="btn-primary py-2 text-sm">Apply</button>
+          <button onClick={handleSearch} className="btn-primary py-2 text-sm">{t('common.apply')}</button>
           {searchResults && (
             <button onClick={clearFilters} className="btn-secondary py-2 text-sm flex items-center gap-1">
-              <X size={14} /> Clear
+              <X size={14} /> {t('common.clear')}
             </button>
           )}
         </div>
@@ -264,13 +266,13 @@ export default function Board() {
       {/* Search Results */}
       {searchResults && (
         <div className="mb-6">
-          <h3 className="text-sm text-slate-400 mb-3">Search results: {searchResults.length} tasks</h3>
+          <h3 className="text-sm text-content-secondary mb-3">{t('board.searchResults')} {searchResults.length} {t('board.tasks')}</h3>
           <div className="grid gap-2 max-w-2xl">
             {searchResults.map((task) => (
               <div key={task.id} className="card py-3 px-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className={`w-2 h-2 rounded-full ${priorityDots[task.priority]}`} />
-                  <span className={task.is_completed ? 'line-through text-slate-500' : ''}>{task.title}</span>
+                  <span className={task.is_completed ? 'line-through text-content-muted' : ''}>{task.title}</span>
                 </div>
                 <span className={`text-xs px-2 py-0.5 rounded-full border ${priorityColors[task.priority]}`}>
                   {task.priority}
@@ -292,7 +294,7 @@ export default function Board() {
               onDrop={(e) => handleDrop(e, col.id)}
             >
               {/* Column Header */}
-              <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--color-border)]">
                 {editingCol === col.id ? (
                   <input
                     className="input-field py-1 text-sm flex-1 mr-2"
@@ -305,7 +307,7 @@ export default function Board() {
                 ) : (
                   <h3 className="font-medium text-sm flex items-center gap-2">
                     {col.name}
-                    <span className="text-xs text-slate-500 bg-white/5 px-1.5 py-0.5 rounded-md">
+                    <span className="text-xs text-content-muted bg-surface-glass px-1.5 py-0.5 rounded-md">
                       {col.tasks?.length || 0}
                     </span>
                   </h3>
@@ -313,13 +315,13 @@ export default function Board() {
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => { setEditingCol(col.id); setEditColName(col.name); }}
-                    className="p-1 rounded-lg hover:bg-white/10 text-slate-400 transition"
+                    className="p-1 rounded-lg hover:bg-surface-glass text-content-secondary transition"
                   >
                     <Edit3 size={14} />
                   </button>
                   <button
                     onClick={() => deleteColumn(col.id)}
-                    className="p-1 rounded-lg hover:bg-red-500/10 text-slate-400 hover:text-red-400 transition"
+                    className="p-1 rounded-lg hover:bg-red-500/10 text-content-secondary hover:text-red-400 transition"
                   >
                     <Trash2 size={14} />
                   </button>
@@ -333,7 +335,7 @@ export default function Board() {
                     key={task.id}
                     draggable
                     onDragStart={(e) => handleDragStart(e, task, col.id)}
-                    className="rounded-xl p-3 bg-dark-100 border border-white/5 hover:border-white/10 cursor-grab active:cursor-grabbing transition group"
+                    className="rounded-xl p-3 bg-surface-elevated border border-[var(--color-border)] hover:border-[var(--color-border-hover)] cursor-grab active:cursor-grabbing transition group"
                   >
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <div className="flex items-start gap-2 min-w-0">
@@ -341,12 +343,12 @@ export default function Board() {
                           {task.is_completed ? (
                             <CheckCircle size={16} className="text-emerald-400" />
                           ) : (
-                            <Circle size={16} className="text-slate-500" />
+                            <Circle size={16} className="text-content-muted" />
                           )}
                         </button>
                         <span
                           className={`text-sm font-medium leading-tight ${
-                            task.is_completed ? 'line-through text-slate-500' : ''
+                            task.is_completed ? 'line-through text-content-muted' : ''
                           }`}
                         >
                           {task.title}
@@ -355,13 +357,13 @@ export default function Board() {
                       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition shrink-0">
                         <button
                           onClick={() => openTaskModal(col.id, task)}
-                          className="p-1 rounded hover:bg-white/10 text-slate-400"
+                          className="p-1 rounded hover:bg-surface-glass text-content-secondary"
                         >
                           <Edit3 size={12} />
                         </button>
                         <button
                           onClick={() => deleteTask(task.id)}
-                          className="p-1 rounded hover:bg-red-500/10 text-slate-400 hover:text-red-400"
+                          className="p-1 rounded hover:bg-red-500/10 text-content-secondary hover:text-red-400"
                         >
                           <Trash2 size={12} />
                         </button>
@@ -369,7 +371,7 @@ export default function Board() {
                     </div>
 
                     {task.description && (
-                      <p className="text-xs text-slate-500 mb-2 ml-6 line-clamp-2">{task.description}</p>
+                      <p className="text-xs text-content-muted mb-2 ml-6 line-clamp-2">{task.description}</p>
                     )}
 
                     <div className="flex items-center gap-2 ml-6 flex-wrap">
@@ -377,7 +379,7 @@ export default function Board() {
                         {task.priority}
                       </span>
                       {task.deadline && (
-                        <span className="text-xs text-slate-500 flex items-center gap-1">
+                        <span className="text-xs text-content-muted flex items-center gap-1">
                           <Calendar size={10} />
                           {new Date(task.deadline).toLocaleDateString()}
                         </span>
@@ -390,9 +392,9 @@ export default function Board() {
               {/* Add Task */}
               <button
                 onClick={() => openTaskModal(col.id)}
-                className="m-2 p-2 rounded-xl text-sm text-slate-400 hover:text-slate-200 hover:bg-white/5 transition flex items-center justify-center gap-1"
+                className="m-2 p-2 rounded-xl text-sm text-content-secondary hover:text-slate-200 hover:bg-surface-glass transition flex items-center justify-center gap-1"
               >
-                <Plus size={16} /> Add Task
+                <Plus size={16} /> {t('board.addTask')}
               </button>
             </div>
           ))}
@@ -403,15 +405,15 @@ export default function Board() {
               <form onSubmit={addColumn} className="glass rounded-2xl p-4">
                 <input
                   className="input-field mb-3 text-sm"
-                  placeholder="Column name"
+                  placeholder={t('board.columnName')}
                   value={newColName}
                   onChange={(e) => setNewColName(e.target.value)}
                   autoFocus
                 />
                 <div className="flex gap-2">
-                  <button type="submit" className="btn-primary py-2 text-sm flex-1">Add</button>
+                  <button type="submit" className="btn-primary py-2 text-sm flex-1">{t('common.add')}</button>
                   <button type="button" onClick={() => setShowAddCol(false)} className="btn-secondary py-2 text-sm">
-                    Cancel
+                    {t('common.cancel')}
                   </button>
                 </div>
               </form>
@@ -419,9 +421,9 @@ export default function Board() {
           ) : (
             <button
               onClick={() => setShowAddCol(true)}
-              className="w-72 shrink-0 rounded-2xl border-2 border-dashed border-white/10 hover:border-violet-500/30 flex items-center justify-center text-slate-400 hover:text-violet-400 transition min-h-[200px]"
+              className="w-72 shrink-0 rounded-2xl border-2 border-dashed border-[var(--color-border-hover)] hover:border-violet-500/30 flex items-center justify-center text-content-secondary hover:text-violet-400 transition min-h-[200px]"
             >
-              <Plus size={20} className="mr-2" /> Add Column
+              <Plus size={20} className="mr-2" /> {t('board.addColumn')}
             </button>
           )}
         </div>
@@ -431,14 +433,14 @@ export default function Board() {
       <Modal
         isOpen={taskModal.open}
         onClose={() => setTaskModal({ open: false, columnId: null, task: null })}
-        title={taskModal.task ? 'Edit Task' : 'New Task'}
+        title={taskModal.task ? t('board.editTask') : t('board.newTask')}
       >
         <form onSubmit={saveTask} className="space-y-4">
           <div>
-            <label className="block text-sm text-slate-400 mb-1">Title</label>
+            <label className="block text-sm text-content-secondary mb-1">{t('board.title')}</label>
             <input
               className="input-field"
-              placeholder="Task title"
+              placeholder={t('board.taskTitle')}
               value={taskForm.title}
               onChange={(e) => setTaskForm({ ...taskForm, title: e.target.value })}
               required
@@ -446,29 +448,29 @@ export default function Board() {
             />
           </div>
           <div>
-            <label className="block text-sm text-slate-400 mb-1">Description</label>
+            <label className="block text-sm text-content-secondary mb-1">{t('board.description')}</label>
             <textarea
               className="input-field min-h-[80px] resize-none"
-              placeholder="Optional description"
+              placeholder={t('board.optionalDesc')}
               value={taskForm.description}
               onChange={(e) => setTaskForm({ ...taskForm, description: e.target.value })}
             />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm text-slate-400 mb-1">Priority</label>
+              <label className="block text-sm text-content-secondary mb-1">{t('board.priority')}</label>
               <select
                 className="input-field"
                 value={taskForm.priority}
                 onChange={(e) => setTaskForm({ ...taskForm, priority: e.target.value })}
               >
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
+                <option value="low">{t('board.low')}</option>
+                <option value="medium">{t('board.medium')}</option>
+                <option value="high">{t('board.high')}</option>
               </select>
             </div>
             <div>
-              <label className="block text-sm text-slate-400 mb-1">Deadline</label>
+              <label className="block text-sm text-content-secondary mb-1">{t('board.deadline')}</label>
               <input
                 type="datetime-local"
                 className="input-field"
@@ -478,7 +480,7 @@ export default function Board() {
             </div>
           </div>
           <button type="submit" className="btn-primary w-full">
-            {taskModal.task ? 'Save Changes' : 'Create Task'}
+            {taskModal.task ? t('board.saveChanges') : t('board.createTask')}
           </button>
         </form>
       </Modal>

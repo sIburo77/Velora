@@ -9,6 +9,18 @@ class Settings(BaseSettings):
     CORS_ORIGINS: str = "http://localhost:3000,http://localhost:5173"
     INVITATION_EXPIRE_HOURS: int = 72
 
+    # SMTP (Gmail)
+    SMTP_HOST: str = "smtp.gmail.com"
+    SMTP_PORT: int = 587
+    SMTP_USER: str = ""
+    SMTP_PASSWORD: str = ""
+
+    # Google OAuth
+    GOOGLE_CLIENT_ID: str = ""
+
+    # Verification
+    VERIFICATION_CODE_EXPIRE_MINUTES: int = 10
+
     @property
     def cors_origins_list(self) -> list[str]:
         return [origin.strip() for origin in self.CORS_ORIGINS.split(",")]

@@ -49,8 +49,15 @@ export function AuthProvider({ children }) {
     return result;
   };
 
-  const register = async (data) => {
-    const result = await api.register(data);
+  const completeRegistration = async (data) => {
+    const result = await api.completeRegistration(data);
+    api.setToken(result.access_token);
+    dispatch({ type: 'SET_USER', payload: result.user });
+    return result;
+  };
+
+  const googleLogin = async (credential) => {
+    const result = await api.googleAuth({ credential });
     api.setToken(result.access_token);
     dispatch({ type: 'SET_USER', payload: result.user });
     return result;
@@ -66,7 +73,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ ...state, login, register, logout, updateUser }}>
+    <AuthContext.Provider value={{ ...state, login, completeRegistration, googleLogin, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

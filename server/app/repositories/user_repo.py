@@ -18,11 +18,19 @@ class UserRepository:
         result = await self.db.execute(select(User).where(User.email == email))
         return result.scalar_one_or_none()
 
-    async def create(self, email: str, name: str, hashed_password: str) -> User:
-        user = User(email=email, name=name, hashed_password=hashed_password)
+    async def create(self, email: str, name: str, hashed_password: str | None = None,
+                     is_verified: bool = True, google_id: str | None = None) -> User:
+        user = User(
+            email=email, name=name, hashed_password=hashed_password,
+            is_verified=is_verified, google_id=google_id,
+        )
         self.db.add(user)
         await self.db.flush()
         return user
+
+    async def get_by_google_id(self, google_id: str) -> User | None:
+        result = await self.db.execute(select(User).where(User.google_id == google_id))
+        return result.scalar_one_or_none()
 
     async def update(self, user: User, **kwargs) -> User:
         for key, value in kwargs.items():

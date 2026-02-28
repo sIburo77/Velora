@@ -51,8 +51,12 @@ class ApiService {
     return this.request(path, { method: 'DELETE' });
   }
 
-  // Auth
-  register(data) { return this.post('/auth/register', data); }
+  // Auth (multi-step registration)
+  initiateRegistration(data) { return this.post('/auth/register', data); }
+  verifyCode(data) { return this.post('/auth/verify-code', data); }
+  completeRegistration(data) { return this.post('/auth/complete-registration', data); }
+  resendCode(data) { return this.post('/auth/resend-code', data); }
+  googleAuth(data) { return this.post('/auth/google', data); }
   login(data) { return this.post('/auth/login', data); }
 
   // User
