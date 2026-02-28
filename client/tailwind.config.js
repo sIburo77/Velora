@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class',
   content: ['./index.html', './src/**/*.{js,jsx}'],
   theme: {
     extend: {
@@ -17,6 +18,19 @@ export default {
           blue: '#3b82f6',
           cyan: '#06b6d4',
           pink: '#ec4899',
+        },
+        surface: {
+          page: 'var(--color-bg-page)',
+          card: 'var(--color-bg-card)',
+          sidebar: 'var(--color-bg-sidebar)',
+          elevated: 'var(--color-bg-elevated)',
+          input: 'var(--color-bg-input)',
+          glass: 'var(--color-bg-glass)',
+        },
+        content: {
+          primary: 'var(--color-text-primary)',
+          secondary: 'var(--color-text-secondary)',
+          muted: 'var(--color-text-muted)',
         },
       },
       backgroundImage: {

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { User, Building, Users, Mail, Trash2, Save, UserMinus, Send, Copy, Check } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useWorkspace } from '../context/WorkspaceContext';
@@ -9,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 
 export default function Settings() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { user, updateUser, logout } = useAuth();
   const {
     currentWorkspace, workspaces, updateWorkspace, deleteWorkspace,
@@ -39,7 +41,7 @@ export default function Settings() {
     try {
       const updated = await api.updateProfile({ name: profileName });
       updateUser(updated);
-      success('Profile updated');
+      success(t('settings.profileUpdated'));
     } catch (err) {
       error(err.message);
     }
@@ -49,7 +51,7 @@ export default function Settings() {
     if (!currentWorkspace) return;
     try {
       await updateWorkspace(currentWorkspace.id, { name: wsName });
-      success('Workspace renamed');
+      success(t('settings.wsRenamed'));
     } catch (err) {
       error(err.message);
     }
@@ -59,7 +61,7 @@ export default function Settings() {
     try {
       await deleteWorkspace(currentWorkspace.id);
       setShowDeleteWs(false);
-      success('Workspace deleted');
+      success(t('settings.wsDeleted'));
     } catch (err) {
       error(err.message);
     }
@@ -82,7 +84,7 @@ export default function Settings() {
       const inv = await api.createInvitation(currentWorkspace.id, { email: inviteEmail.trim() });
       setInviteEmail('');
       setInvitations([...invitations, inv]);
-      success('Invitation sent');
+      success(t('settings.invitationSent'));
     } catch (err) {
       error(err.message);
     }
@@ -94,7 +96,7 @@ export default function Settings() {
     try {
       await api.acceptInvitation({ token: acceptToken.trim() });
       setAcceptToken('');
-      success('Invitation accepted! Reload to see the workspace.');
+      success(t('settings.invitationAccepted'));
       window.location.reload();
     } catch (err) {
       error(err.message);
@@ -108,7 +110,7 @@ export default function Settings() {
       await createWorkspace({ name: newWsName.trim() });
       setNewWsName('');
       setShowNewWs(false);
-      success('Workspace created');
+      success(t('settings.wsCreated'));
     } catch (err) {
       error(err.message);
     }
@@ -124,16 +126,16 @@ export default function Settings() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-8">
-      <h1 className="text-2xl font-bold">Settings</h1>
+      <h1 className="text-2xl font-bold">{t('settings.title')}</h1>
 
       {/* Profile */}
       <div className="card">
         <h2 className="font-semibold mb-4 flex items-center gap-2">
-          <User size={18} className="text-violet-400" /> Profile
+          <User size={18} className="text-violet-400" /> {t('settings.profile')}
         </h2>
         <div className="space-y-3">
           <div>
-            <label className="block text-sm text-slate-400 mb-1">Name</label>
+            <label className="block text-sm text-content-secondary mb-1">{t('auth.name')}</label>
             <div className="flex gap-2">
               <input
                 className="input-field flex-1"
@@ -141,12 +143,12 @@ export default function Settings() {
                 onChange={(e) => setProfileName(e.target.value)}
               />
               <button onClick={saveProfile} className="btn-primary flex items-center gap-2">
-                <Save size={16} /> Save
+                <Save size={16} /> {t('common.save')}
               </button>
             </div>
           </div>
           <div>
-            <label className="block text-sm text-slate-400 mb-1">Email</label>
+            <label className="block text-sm text-content-secondary mb-1">{t('auth.email')}</label>
             <input className="input-field opacity-50" value={user?.email || ''} disabled />
           </div>
         </div>
@@ -155,16 +157,16 @@ export default function Settings() {
       {/* Accept Invitation */}
       <div className="card">
         <h2 className="font-semibold mb-4 flex items-center gap-2">
-          <Mail size={18} className="text-cyan-400" /> Accept Invitation
+          <Mail size={18} className="text-cyan-400" /> {t('settings.acceptInvitation')}
         </h2>
         <form onSubmit={handleAcceptInvitation} className="flex gap-2">
           <input
             className="input-field flex-1"
-            placeholder="Paste invitation token"
+            placeholder={t('settings.pasteToken')}
             value={acceptToken}
             onChange={(e) => setAcceptToken(e.target.value)}
           />
-          <button type="submit" className="btn-primary">Accept</button>
+          <button type="submit" className="btn-primary">{t('common.accept')}</button>
         </form>
       </div>
 
@@ -174,16 +176,16 @@ export default function Settings() {
           <div className="card">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold flex items-center gap-2">
-                <Building size={18} className="text-blue-400" /> Workspace
+                <Building size={18} className="text-blue-400" /> {t('settings.workspace')}
               </h2>
               <button onClick={() => setShowNewWs(true)} className="btn-secondary py-1.5 text-sm">
-                + New
+                + {t('settings.newWorkspace')}
               </button>
             </div>
             {isOwner && (
               <div className="space-y-3">
                 <div>
-                  <label className="block text-sm text-slate-400 mb-1">Name</label>
+                  <label className="block text-sm text-content-secondary mb-1">{t('auth.name')}</label>
                   <div className="flex gap-2">
                     <input
                       className="input-field flex-1"
@@ -191,7 +193,7 @@ export default function Settings() {
                       onChange={(e) => setWsName(e.target.value)}
                     />
                     <button onClick={saveWorkspaceName} className="btn-primary flex items-center gap-2">
-                      <Save size={16} /> Save
+                      <Save size={16} /> {t('common.save')}
                     </button>
                   </div>
                 </div>
@@ -199,42 +201,42 @@ export default function Settings() {
                   onClick={() => setShowDeleteWs(true)}
                   className="btn-danger text-sm flex items-center gap-2"
                 >
-                  <Trash2 size={16} /> Delete Workspace
+                  <Trash2 size={16} /> {t('settings.deleteWorkspace')}
                 </button>
               </div>
             )}
             {!isOwner && (
-              <p className="text-sm text-slate-400">You are a member of this workspace. Only the owner can edit settings.</p>
+              <p className="text-sm text-content-secondary">{t('settings.memberOnly')}</p>
             )}
           </div>
 
           {/* Members */}
           <div className="card">
             <h2 className="font-semibold mb-4 flex items-center gap-2">
-              <Users size={18} className="text-emerald-400" /> Members
+              <Users size={18} className="text-emerald-400" /> {t('settings.members')}
             </h2>
             <div className="space-y-2 mb-4">
               {members.map((m) => (
-                <div key={m.id} className="flex items-center justify-between py-2 px-3 rounded-xl hover:bg-white/3">
+                <div key={m.id} className="flex items-center justify-between py-2 px-3 rounded-xl hover:bg-surface-glass">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-blue-500 flex items-center justify-center text-xs font-bold">
                       {m.user_name?.[0]?.toUpperCase() || '?'}
                     </div>
                     <div>
                       <p className="text-sm font-medium">{m.user_name || 'Unknown'}</p>
-                      <p className="text-xs text-slate-500">{m.user_email}</p>
+                      <p className="text-xs text-content-muted">{m.user_email}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className={`text-xs px-2 py-0.5 rounded-full ${
-                      m.role === 'owner' ? 'bg-violet-500/20 text-violet-400' : 'bg-white/5 text-slate-400'
+                      m.role === 'owner' ? 'bg-violet-500/20 text-violet-400' : 'bg-surface-glass text-content-secondary'
                     }`}>
                       {m.role}
                     </span>
                     {isOwner && m.role !== 'owner' && (
                       <button
                         onClick={() => removeMember(currentWorkspace.id, m.user_id)}
-                        className="p-1 rounded-lg hover:bg-red-500/10 text-slate-400 hover:text-red-400 transition"
+                        className="p-1 rounded-lg hover:bg-red-500/10 text-content-secondary hover:text-red-400 transition"
                       >
                         <UserMinus size={14} />
                       </button>
@@ -247,31 +249,31 @@ export default function Settings() {
             {/* Invite */}
             {isOwner && (
               <>
-                <h3 className="text-sm font-medium text-slate-400 mb-2">Invite by email</h3>
+                <h3 className="text-sm font-medium text-content-secondary mb-2">{t('settings.inviteByEmail')}</h3>
                 <form onSubmit={sendInvitation} className="flex gap-2 mb-4">
                   <input
                     className="input-field flex-1"
                     type="email"
-                    placeholder="user@example.com"
+                    placeholder={t('settings.userEmail')}
                     value={inviteEmail}
                     onChange={(e) => setInviteEmail(e.target.value)}
                   />
                   <button type="submit" className="btn-primary flex items-center gap-2">
-                    <Send size={16} /> Invite
+                    <Send size={16} /> {t('common.invite')}
                   </button>
                 </form>
 
                 {/* Pending Invitations */}
                 {invitations.filter(i => i.status === 'pending').length > 0 && (
                   <>
-                    <h3 className="text-sm font-medium text-slate-400 mb-2">Pending Invitations</h3>
+                    <h3 className="text-sm font-medium text-content-secondary mb-2">{t('settings.pendingInvitations')}</h3>
                     <div className="space-y-2">
                       {invitations.filter(i => i.status === 'pending').map((inv) => (
-                        <div key={inv.id} className="flex items-center justify-between py-2 px-3 rounded-xl bg-dark-100">
+                        <div key={inv.id} className="flex items-center justify-between py-2 px-3 rounded-xl bg-surface-elevated">
                           <div>
                             <p className="text-sm">{inv.email}</p>
-                            <p className="text-xs text-slate-500">
-                              Expires: {new Date(inv.expires_at).toLocaleDateString()}
+                            <p className="text-xs text-content-muted">
+                              {t('dashboard.expires')}: {new Date(inv.expires_at).toLocaleDateString()}
                             </p>
                           </div>
                           <button
@@ -279,7 +281,7 @@ export default function Settings() {
                             className="btn-secondary py-1 px-2 text-xs flex items-center gap-1"
                           >
                             {copiedToken === inv.token ? <Check size={12} /> : <Copy size={12} />}
-                            {copiedToken === inv.token ? 'Copied' : 'Token'}
+                            {copiedToken === inv.token ? t('settings.copied') : t('settings.token')}
                           </button>
                         </div>
                       ))}
@@ -294,48 +296,48 @@ export default function Settings() {
 
       {/* Danger Zone */}
       <div className="card border-red-500/20">
-        <h2 className="font-semibold mb-4 text-red-400">Danger Zone</h2>
+        <h2 className="font-semibold mb-4 text-red-400">{t('settings.dangerZone')}</h2>
         <button
           onClick={() => setShowDeleteAccount(true)}
           className="btn-danger text-sm flex items-center gap-2"
         >
-          <Trash2 size={16} /> Delete Account
+          <Trash2 size={16} /> {t('settings.deleteAccount')}
         </button>
       </div>
 
       {/* Delete Workspace Modal */}
-      <Modal isOpen={showDeleteWs} onClose={() => setShowDeleteWs(false)} title="Delete Workspace">
-        <p className="text-slate-400 mb-4">
-          This will permanently delete <strong>{currentWorkspace?.name}</strong> and all its data. This cannot be undone.
+      <Modal isOpen={showDeleteWs} onClose={() => setShowDeleteWs(false)} title={t('settings.deleteWorkspace')}>
+        <p className="text-content-secondary mb-4">
+          {t('settings.deleteWsConfirm', { name: currentWorkspace?.name })}
         </p>
         <div className="flex gap-2">
-          <button onClick={handleDeleteWorkspace} className="btn-danger flex-1">Delete</button>
-          <button onClick={() => setShowDeleteWs(false)} className="btn-secondary flex-1">Cancel</button>
+          <button onClick={handleDeleteWorkspace} className="btn-danger flex-1">{t('common.delete')}</button>
+          <button onClick={() => setShowDeleteWs(false)} className="btn-secondary flex-1">{t('common.cancel')}</button>
         </div>
       </Modal>
 
       {/* Delete Account Modal */}
-      <Modal isOpen={showDeleteAccount} onClose={() => setShowDeleteAccount(false)} title="Delete Account">
-        <p className="text-slate-400 mb-4">
-          This will permanently delete your account and all associated data. This cannot be undone.
+      <Modal isOpen={showDeleteAccount} onClose={() => setShowDeleteAccount(false)} title={t('settings.deleteAccount')}>
+        <p className="text-content-secondary mb-4">
+          {t('settings.deleteAccountConfirm')}
         </p>
         <div className="flex gap-2">
-          <button onClick={handleDeleteAccount} className="btn-danger flex-1">Delete</button>
-          <button onClick={() => setShowDeleteAccount(false)} className="btn-secondary flex-1">Cancel</button>
+          <button onClick={handleDeleteAccount} className="btn-danger flex-1">{t('common.delete')}</button>
+          <button onClick={() => setShowDeleteAccount(false)} className="btn-secondary flex-1">{t('common.cancel')}</button>
         </div>
       </Modal>
 
       {/* Create Workspace Modal */}
-      <Modal isOpen={showNewWs} onClose={() => setShowNewWs(false)} title="Create Workspace">
+      <Modal isOpen={showNewWs} onClose={() => setShowNewWs(false)} title={t('settings.createWorkspace')}>
         <form onSubmit={handleCreateWorkspace}>
           <input
             className="input-field mb-4"
-            placeholder="Workspace name"
+            placeholder={t('settings.wsName')}
             value={newWsName}
             onChange={(e) => setNewWsName(e.target.value)}
             autoFocus
           />
-          <button type="submit" className="btn-primary w-full">Create</button>
+          <button type="submit" className="btn-primary w-full">{t('common.create')}</button>
         </form>
       </Modal>
     </div>

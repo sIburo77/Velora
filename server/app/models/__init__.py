@@ -5,5 +5,6 @@ from app.models.invitation import Invitation
 from app.models.board import Board
 from app.models.column import Column
 from app.models.task import Task
+from app.models.verification_code import VerificationCode
 
-__all__ = ["User", "Workspace", "WorkspaceMember", "Invitation", "Board", "Column", "Task"]
+__all__ = ["User", "Workspace", "WorkspaceMember", "Invitation", "Board", "Column", "Task", "VerificationCode"]
