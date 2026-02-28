@@ -7,16 +7,32 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import api from '../services/api';
 import Loader from '../components/ui/Loader';
+import Modal from '../components/ui/Modal';
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { user } = useAuth();
-  const { currentWorkspace, workspaces, fetchWorkspaces } = useWorkspace();
+  const { currentWorkspace, workspaces, fetchWorkspaces, createWorkspace } = useWorkspace();
   const { success, error } = useToast();
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [pendingInvitations, setPendingInvitations] = useState([]);
+  const [showCreate, setShowCreate] = useState(false);
+  const [newWsName, setNewWsName] = useState('');
+
+  const handleCreate = async (e) => {
+    e.preventDefault();
+    if (!newWsName.trim()) return;
+    try {
+      await createWorkspace({ name: newWsName.trim() });
+      setNewWsName('');
+      setShowCreate(false);
+      success(t('settings.wsCreated'));
+    } catch (err) {
+      error(err.message);
+    }
+  };
 
   useEffect(() => {
     fetchWorkspaces().finally(() => setLoading(false));
@@ -91,10 +107,24 @@ export default function Dashboard() {
           <Kanban size={48} className="mx-auto text-violet-400 mb-4" />
           <h2 className="text-xl font-semibold mb-2">{t('dashboard.noWorkspace')}</h2>
           <p className="text-content-secondary mb-6">{t('dashboard.noWorkspaceDesc')}</p>
-          <button onClick={() => navigate('/settings')} className="btn-primary">
+          <button onClick={() => setShowCreate(true)} className="btn-primary">
             <Plus size={18} className="inline mr-2" /> {t('dashboard.createWorkspace')}
           </button>
         </div>
+        <Modal isOpen={showCreate} onClose={() => setShowCreate(false)} title={t('settings.createWorkspace')}>
+          <form onSubmit={handleCreate}>
+            <input
+              className="input-field mb-4"
+              placeholder={t('settings.wsName')}
+              value={newWsName}
+              onChange={(e) => setNewWsName(e.target.value)}
+              autoFocus
+            />
+            <button type="submit" className="btn-primary w-full">
+              {t('common.create')}
+            </button>
+          </form>
+        </Modal>
       </div>
     );
   }

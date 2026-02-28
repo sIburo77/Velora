@@ -38,7 +38,10 @@ export default function Board() {
   const [dragTask, setDragTask] = useState(null);
 
   const fetchBoard = useCallback(async () => {
-    if (!currentWorkspace) return;
+    if (!currentWorkspace) {
+      setLoading(false);
+      return;
+    }
     try {
       const data = await api.getBoard(currentWorkspace.id);
       setBoard(data);
