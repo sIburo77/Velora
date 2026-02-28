@@ -12,7 +12,10 @@ export default function Analytics() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!currentWorkspace) return;
+    if (!currentWorkspace) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     api.getAnalytics(currentWorkspace.id)
       .then(setData)
@@ -21,7 +24,7 @@ export default function Analytics() {
   }, [currentWorkspace]);
 
   if (loading) return <Loader />;
-  if (!data) return <div className="text-content-secondary text-center mt-20">{t('analytics.noData')}</div>;
+  if (!currentWorkspace || !data) return <div className="text-content-secondary text-center mt-20">{t('analytics.noData')}</div>;
 
   const maxColCount = Math.max(...Object.values(data.by_column), 1);
   const priorityLabels = { high: t('analytics.high'), medium: t('analytics.medium'), low: t('analytics.low') };
