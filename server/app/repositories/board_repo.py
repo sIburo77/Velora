@@ -145,6 +145,8 @@ class BoardRepository:
         priority: str | None = None,
         is_completed: bool | None = None,
         has_deadline: bool | None = None,
+        deadline_from: "datetime | None" = None,
+        deadline_to: "datetime | None" = None,
     ) -> list[Task]:
         stmt = select(Task).join(Column, Column.id == Task.column_id).where(Column.board_id == board_id)
 
@@ -156,6 +158,10 @@ class BoardRepository:
             stmt = stmt.where(Task.is_completed == is_completed)
         if has_deadline is True:
             stmt = stmt.where(Task.deadline.isnot(None))
+        if deadline_from:
+            stmt = stmt.where(Task.deadline >= deadline_from)
+        if deadline_to:
+            stmt = stmt.where(Task.deadline <= deadline_to)
 
         result = await self.db.execute(stmt.order_by(Task.position))
         return result.scalars().all()

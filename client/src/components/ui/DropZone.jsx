@@ -1,11 +1,11 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Upload } from 'lucide-react';
 
-export default function DropZone({ children, onFileDrop, className = '' }) {
+export default function DropZone({ children, onFileDrop, className = '', compact = false }) {
   const { t } = useTranslation();
   const [dragging, setDragging] = useState(false);
-  const dragCounter = { current: 0 };
+  const dragCounter = useRef(0);
 
   const handleDragEnter = useCallback((e) => {
     e.preventDefault();
@@ -48,14 +48,18 @@ export default function DropZone({ children, onFileDrop, className = '' }) {
       onDrop={handleDrop}
     >
       {children}
-      {dragging && (
-        <div className="absolute inset-0 z-40 flex items-center justify-center bg-violet-500/10 backdrop-blur-sm border-2 border-dashed border-violet-500/50 rounded-2xl">
-          <div className="flex flex-col items-center gap-2 text-violet-400">
-            <Upload size={32} />
-            <span className="text-sm font-medium">{t('common.dropFileHere')}</span>
-          </div>
+      <div
+        className={`absolute inset-0 z-40 flex items-center justify-center border-2 border-dashed rounded-2xl transition-all duration-200 ${
+          dragging
+            ? 'opacity-100 pointer-events-auto bg-violet-500/10 backdrop-blur-sm border-violet-500/50'
+            : 'opacity-0 pointer-events-none border-transparent'
+        } ${compact ? 'rounded-xl' : 'rounded-2xl'}`}
+      >
+        <div className="flex flex-col items-center gap-1 text-violet-400">
+          <Upload size={compact ? 20 : 32} />
+          <span className={`font-medium ${compact ? 'text-xs' : 'text-sm'}`}>{t('common.dropFileHere')}</span>
         </div>
-      )}
+      </div>
     </div>
   );
 }

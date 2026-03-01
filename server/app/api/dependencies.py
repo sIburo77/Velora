@@ -111,8 +111,9 @@ def get_invitation_service(
 def get_board_service(
     board_repo: BoardRepository = Depends(get_board_repo),
     workspace_repo: WorkspaceRepository = Depends(get_workspace_repo),
+    notification_repo: NotificationRepository = Depends(get_notification_repo),
 ) -> BoardService:
-    return BoardService(board_repo, workspace_repo)
+    return BoardService(board_repo, workspace_repo, notification_repo)
 
 
 def get_comment_service(

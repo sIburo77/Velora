@@ -1,5 +1,6 @@
-import { createContext, useContext, useReducer, useCallback } from 'react';
+import { createContext, useContext, useReducer, useCallback, useEffect } from 'react';
 import api from '../services/api';
+import { useAuth } from './AuthContext';
 
 const WorkspaceContext = createContext(null);
 
@@ -49,6 +50,7 @@ function workspaceReducer(state, action) {
 
 export function WorkspaceProvider({ children }) {
   const [state, dispatch] = useReducer(workspaceReducer, initialState);
+  const { isAuthenticated } = useAuth();
 
   const fetchWorkspaces = useCallback(async () => {
     dispatch({ type: 'SET_LOADING', payload: true });
@@ -65,6 +67,12 @@ export function WorkspaceProvider({ children }) {
       dispatch({ type: 'SET_CURRENT', payload: found || data[0] });
     }
   }, []);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchWorkspaces().catch(() => {});
+    }
+  }, [isAuthenticated]);
 
   const selectWorkspace = useCallback((workspace) => {
     dispatch({ type: 'SET_CURRENT', payload: workspace });

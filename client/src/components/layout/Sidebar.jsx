@@ -15,6 +15,7 @@ import {
   X,
   MessageCircle,
   CalendarDays,
+  Users,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useWorkspace } from '../../context/WorkspaceContext';
@@ -22,7 +23,9 @@ import { useTheme } from '../../context/ThemeContext';
 import Modal from '../ui/Modal';
 import { useToast } from '../../context/ToastContext';
 import NotificationBell from '../notifications/NotificationBell';
+import NotificationPanel from '../notifications/NotificationPanel';
 import TemplatePicker from '../workspace/TemplatePicker';
+import MemberListModal from '../workspace/MemberListModal';
 
 const navItems = [
   { icon: LayoutDashboard, labelKey: 'sidebar.dashboard', path: '/dashboard' },
@@ -42,7 +45,9 @@ export default function Sidebar({ open, onClose }) {
   const { theme, toggleTheme } = useTheme();
   const { success, error } = useToast();
   const [showWs, setShowWs] = useState(false);
+  const [showNotif, setShowNotif] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
+  const [showMembers, setShowMembers] = useState(false);
   const [newWsName, setNewWsName] = useState('');
   const [newWsTemplate, setNewWsTemplate] = useState('default');
   const [themeAnimating, setThemeAnimating] = useState(false);
@@ -133,13 +138,16 @@ export default function Sidebar({ open, onClose }) {
         <div className="p-6 pb-4 flex items-center justify-between">
           <h1 className="text-xl font-bold glow-text">Velora</h1>
           <div className="flex items-center gap-1">
-            <div className="hidden md:block">
-              <NotificationBell />
-            </div>
+            <NotificationBell onClick={() => setShowNotif(!showNotif)} active={showNotif} />
             <button onClick={onClose} className="p-1 rounded-lg hover:bg-surface-glass transition md:hidden">
               <X size={20} />
             </button>
           </div>
+        </div>
+
+        {/* Notification Panel */}
+        <div className="px-4">
+          <NotificationPanel open={showNotif} />
         </div>
 
         {/* Workspace Switcher */}
@@ -188,6 +196,14 @@ export default function Sidebar({ open, onClose }) {
               <Plus size={14} /> {t('sidebar.newWorkspace')}
             </button>
           </div>
+          {currentWorkspace && (
+            <button
+              onClick={() => setShowMembers(true)}
+              className="w-full flex items-center gap-2 px-3 py-2 mt-2 rounded-xl text-sm text-content-secondary hover:text-violet-400 hover:bg-violet-500/10 transition"
+            >
+              <Users size={16} /> {t('members.title')}
+            </button>
+          )}
         </div>
 
         {/* Navigation */}
@@ -268,6 +284,12 @@ export default function Sidebar({ open, onClose }) {
           <button type="submit" className="btn-primary w-full">{t('common.create')}</button>
         </form>
       </Modal>
+
+      <MemberListModal
+        isOpen={showMembers}
+        onClose={() => setShowMembers(false)}
+        workspaceId={currentWorkspace?.id}
+      />
     </>
   );
 }

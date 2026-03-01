@@ -5,6 +5,7 @@ from calendar import monthrange
 from app.core.exceptions import NotFoundError, ForbiddenError
 from app.repositories.board_repo import BoardRepository
 from app.repositories.workspace_repo import WorkspaceRepository
+from app.repositories.notification_repo import NotificationRepository
 from app.schemas.board import (
     BoardFullResponse,
     ColumnCreate,
@@ -22,9 +23,10 @@ from app.schemas.board import (
 
 
 class BoardService:
-    def __init__(self, board_repo: BoardRepository, workspace_repo: WorkspaceRepository):
+    def __init__(self, board_repo: BoardRepository, workspace_repo: WorkspaceRepository, notification_repo: NotificationRepository):
         self.board_repo = board_repo
         self.workspace_repo = workspace_repo
+        self.notification_repo = notification_repo
 
     async def _check_membership(self, workspace_id: uuid.UUID, user_id: uuid.UUID) -> str:
         member = await self.workspace_repo.get_member(workspace_id, user_id)
@@ -140,6 +142,13 @@ class BoardService:
             created_by=user_id,
             position=position,
         )
+        if data.assigned_to and data.assigned_to != user_id:
+            await self.notification_repo.create(
+                user_id=data.assigned_to,
+                type="task",
+                title=f"Task assigned: {data.title}",
+                body=f"You have been assigned to \"{data.title}\"",
+            )
         return TaskResponse.model_validate(task)
 
     async def update_task(
@@ -150,6 +159,8 @@ class BoardService:
         if not task:
             raise NotFoundError("Task not found")
 
+        old_assigned = task.assigned_to
+
         kwargs = {}
         for field in ["title", "description", "priority", "is_completed", "deadline", "assigned_to"]:
             value = getattr(data, field)
@@ -157,6 +168,16 @@ class BoardService:
                 kwargs[field] = value
 
         updated = await self.board_repo.update_task(task, **kwargs)
+
+        new_assigned = data.assigned_to
+        if new_assigned and new_assigned != old_assigned and new_assigned != user_id:
+            await self.notification_repo.create(
+                user_id=new_assigned,
+                type="task",
+                title=f"Task assigned: {updated.title}",
+                body=f"You have been assigned to \"{updated.title}\"",
+            )
+
         return TaskResponse.model_validate(updated)
 
     async def delete_task(
@@ -201,13 +222,16 @@ class BoardService:
         priority: str | None = None,
         is_completed: bool | None = None,
         has_deadline: bool | None = None,
+        deadline_from: "datetime | None" = None,
+        deadline_to: "datetime | None" = None,
     ) -> list[TaskResponse]:
         await self._check_membership(workspace_id, user_id)
         board = await self.board_repo.get_by_workspace(workspace_id)
         if not board:
             return []
         tasks = await self.board_repo.search_tasks(
-            board.id, query=query, priority=priority, is_completed=is_completed, has_deadline=has_deadline
+            board.id, query=query, priority=priority, is_completed=is_completed,
+            has_deadline=has_deadline, deadline_from=deadline_from, deadline_to=deadline_to,
         )
         return [TaskResponse.model_validate(t) for t in tasks]
 

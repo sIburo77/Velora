@@ -142,7 +142,12 @@
     "createTag": "Создать",
     "tagName": "Название метки",
     "noTags": "Нет меток",
-    "noMoreTags": "Нет доступных меток"
+    "noMoreTags": "Нет доступных меток",
+    "dateFrom": "С",
+    "dateTo": "По",
+    "assignee": "Исполнитель",
+    "unassigned": "Не назначен",
+    "taskAssigned": "Задача назначена"
   },
   "analytics": {
     "title": "Аналитика",
@@ -272,6 +277,12 @@
     "scrum": "Scrum",
     "marketing": "Маркетинг",
     "personal": "Личный"
+  },
+  "members": {
+    "title": "Участники команды",
+    "joined": "Присоединился",
+    "backToList": "Назад к списку",
+    "empty": "Нет участников"
   },
   "roles": {
     "viewer": "Наблюдатель",
