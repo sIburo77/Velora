@@ -64,6 +64,38 @@ class ApiService {
   updateProfile(data) { return this.patch('/users/me', data); }
   deleteAccount() { return this.delete('/users/me'); }
 
+  // Avatars
+  async uploadUserAvatar(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    const headers = {};
+    if (this.token) headers['Authorization'] = `Bearer ${this.token}`;
+    const response = await fetch(`${API_BASE}/users/me/avatar`, {
+      method: 'POST', body: formData, headers,
+    });
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ detail: 'Upload failed' }));
+      throw new Error(error.detail || `HTTP ${response.status}`);
+    }
+    return response.json();
+  }
+  deleteUserAvatar() { return this.delete('/users/me/avatar'); }
+  async uploadWorkspaceAvatar(wsId, file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    const headers = {};
+    if (this.token) headers['Authorization'] = `Bearer ${this.token}`;
+    const response = await fetch(`${API_BASE}/workspaces/${wsId}/avatar`, {
+      method: 'POST', body: formData, headers,
+    });
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ detail: 'Upload failed' }));
+      throw new Error(error.detail || `HTTP ${response.status}`);
+    }
+    return response.json();
+  }
+  deleteWorkspaceAvatar(wsId) { return this.delete(`/workspaces/${wsId}/avatar`); }
+
   // Workspaces
   getWorkspaces() { return this.get('/workspaces'); }
   createWorkspace(data) { return this.post('/workspaces', data); }

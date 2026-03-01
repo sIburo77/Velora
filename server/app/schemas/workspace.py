@@ -16,6 +16,7 @@ class WorkspaceUpdate(BaseModel):
 class WorkspaceResponse(BaseModel):
     id: uuid.UUID
     name: str
+    avatar_url: str | None = None
     created_at: datetime
     role: str | None = None
 

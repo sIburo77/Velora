@@ -185,7 +185,9 @@
     "member": "Участник",
     "editor": "Редактор",
     "admin": "Администратор",
-    "roleUpdated": "Роль обновлена"
+    "roleUpdated": "Роль обновлена",
+    "avatarUpdated": "Аватар обновлён",
+    "avatarRemoved": "Аватар удалён"
   },
   "sidebar": {
     "dashboard": "Главная",

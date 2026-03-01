@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { User, Building, Users, Mail, Trash2, Save, UserMinus, Send, Copy, Check } from 'lucide-react';
+import { User, Building, Users, Mail, Trash2, Save, UserMinus, Send, Copy, Check, Camera, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useWorkspace } from '../context/WorkspaceContext';
 import { useToast } from '../context/ToastContext';
@@ -14,7 +14,7 @@ export default function Settings() {
   const { user, updateUser, logout } = useAuth();
   const {
     currentWorkspace, workspaces, updateWorkspace, deleteWorkspace,
-    fetchMembers, members, removeMember, createWorkspace,
+    fetchMembers, members, removeMember, createWorkspace, fetchWorkspaces,
   } = useWorkspace();
   const { success, error } = useToast();
 
@@ -28,6 +28,8 @@ export default function Settings() {
   const [newWsName, setNewWsName] = useState('');
   const [acceptToken, setAcceptToken] = useState('');
   const [copiedToken, setCopiedToken] = useState(null);
+  const userAvatarRef = useRef(null);
+  const wsAvatarRef = useRef(null);
 
   useEffect(() => {
     setWsName(currentWorkspace?.name || '');
@@ -122,6 +124,52 @@ export default function Settings() {
     setTimeout(() => setCopiedToken(null), 2000);
   };
 
+  const handleUserAvatar = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const updated = await api.uploadUserAvatar(file);
+      updateUser(updated);
+      success(t('settings.avatarUpdated'));
+    } catch (err) {
+      error(err.message);
+    }
+    if (userAvatarRef.current) userAvatarRef.current.value = '';
+  };
+
+  const removeUserAvatar = async () => {
+    try {
+      const updated = await api.deleteUserAvatar();
+      updateUser(updated);
+      success(t('settings.avatarRemoved'));
+    } catch (err) {
+      error(err.message);
+    }
+  };
+
+  const handleWsAvatar = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      await api.uploadWorkspaceAvatar(currentWorkspace.id, file);
+      await fetchWorkspaces();
+      success(t('settings.avatarUpdated'));
+    } catch (err) {
+      error(err.message);
+    }
+    if (wsAvatarRef.current) wsAvatarRef.current.value = '';
+  };
+
+  const removeWsAvatar = async () => {
+    try {
+      await api.deleteWorkspaceAvatar(currentWorkspace.id);
+      await fetchWorkspaces();
+      success(t('settings.avatarRemoved'));
+    } catch (err) {
+      error(err.message);
+    }
+  };
+
   const isAdmin = currentWorkspace?.role === 'admin';
 
   const changeRole = async (userId, role) => {
@@ -143,23 +191,46 @@ export default function Settings() {
         <h2 className="font-semibold mb-4 flex items-center gap-2">
           <User size={18} className="text-violet-400" /> {t('settings.profile')}
         </h2>
-        <div className="space-y-3">
-          <div>
-            <label className="block text-sm text-content-secondary mb-1">{t('auth.name')}</label>
-            <div className="flex gap-2">
-              <input
-                className="input-field flex-1"
-                value={profileName}
-                onChange={(e) => setProfileName(e.target.value)}
-              />
-              <button onClick={saveProfile} className="btn-primary flex items-center gap-2">
-                <Save size={16} /> {t('common.save')}
+        <div className="flex items-start gap-6">
+          <div className="relative group shrink-0">
+            {user?.avatar_url ? (
+              <img src={user.avatar_url} alt="" className="w-20 h-20 rounded-full object-cover" />
+            ) : (
+              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center text-2xl font-bold text-white">
+                {user?.name?.[0]?.toUpperCase()}
+              </div>
+            )}
+            <label className="absolute inset-0 flex items-center justify-center rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition cursor-pointer">
+              <Camera size={20} className="text-white" />
+              <input ref={userAvatarRef} type="file" accept="image/*" className="hidden" onChange={handleUserAvatar} />
+            </label>
+            {user?.avatar_url && (
+              <button
+                onClick={removeUserAvatar}
+                className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+              >
+                <X size={12} className="text-white" />
               </button>
-            </div>
+            )}
           </div>
-          <div>
-            <label className="block text-sm text-content-secondary mb-1">{t('auth.email')}</label>
-            <input className="input-field opacity-50" value={user?.email || ''} disabled />
+          <div className="space-y-3 flex-1">
+            <div>
+              <label className="block text-sm text-content-secondary mb-1">{t('auth.name')}</label>
+              <div className="flex gap-2">
+                <input
+                  className="input-field flex-1"
+                  value={profileName}
+                  onChange={(e) => setProfileName(e.target.value)}
+                />
+                <button onClick={saveProfile} className="btn-primary flex items-center gap-2">
+                  <Save size={16} /> {t('common.save')}
+                </button>
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm text-content-secondary mb-1">{t('auth.email')}</label>
+              <input className="input-field opacity-50" value={user?.email || ''} disabled />
+            </div>
           </div>
         </div>
       </div>
@@ -193,26 +264,49 @@ export default function Settings() {
               </button>
             </div>
             {isAdmin && (
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-sm text-content-secondary mb-1">{t('auth.name')}</label>
-                  <div className="flex gap-2">
-                    <input
-                      className="input-field flex-1"
-                      value={wsName}
-                      onChange={(e) => setWsName(e.target.value)}
-                    />
-                    <button onClick={saveWorkspaceName} className="btn-primary flex items-center gap-2">
-                      <Save size={16} /> {t('common.save')}
+              <div className="flex items-start gap-6">
+                <div className="relative group shrink-0">
+                  {currentWorkspace?.avatar_url ? (
+                    <img src={currentWorkspace.avatar_url} alt="" className="w-16 h-16 rounded-xl object-cover" />
+                  ) : (
+                    <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-violet-500 to-blue-500 flex items-center justify-center text-xl font-bold text-white">
+                      {currentWorkspace?.name?.[0]?.toUpperCase() || 'W'}
+                    </div>
+                  )}
+                  <label className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/50 opacity-0 group-hover:opacity-100 transition cursor-pointer">
+                    <Camera size={18} className="text-white" />
+                    <input ref={wsAvatarRef} type="file" accept="image/*" className="hidden" onChange={handleWsAvatar} />
+                  </label>
+                  {currentWorkspace?.avatar_url && (
+                    <button
+                      onClick={removeWsAvatar}
+                      className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+                    >
+                      <X size={12} className="text-white" />
                     </button>
-                  </div>
+                  )}
                 </div>
-                <button
-                  onClick={() => setShowDeleteWs(true)}
-                  className="btn-danger text-sm flex items-center gap-2"
-                >
-                  <Trash2 size={16} /> {t('settings.deleteWorkspace')}
-                </button>
+                <div className="space-y-3 flex-1">
+                  <div>
+                    <label className="block text-sm text-content-secondary mb-1">{t('auth.name')}</label>
+                    <div className="flex gap-2">
+                      <input
+                        className="input-field flex-1"
+                        value={wsName}
+                        onChange={(e) => setWsName(e.target.value)}
+                      />
+                      <button onClick={saveWorkspaceName} className="btn-primary flex items-center gap-2">
+                        <Save size={16} /> {t('common.save')}
+                      </button>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowDeleteWs(true)}
+                    className="btn-danger text-sm flex items-center gap-2"
+                  >
+                    <Trash2 size={16} /> {t('settings.deleteWorkspace')}
+                  </button>
+                </div>
               </div>
             )}
             {!isAdmin && (
