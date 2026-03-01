@@ -26,6 +26,7 @@ class ChatService:
             file_name=msg.file_name,
             created_at=msg.created_at,
             author_name=msg.author.name if msg.author else None,
+            author_avatar=msg.author.avatar_url if msg.author else None,
         )
 
     async def get_history(
