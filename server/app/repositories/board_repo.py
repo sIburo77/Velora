@@ -73,7 +73,9 @@ class BoardRepository:
 
     # Task operations
     async def get_task(self, task_id: uuid.UUID) -> Task | None:
-        result = await self.db.execute(select(Task).where(Task.id == task_id))
+        result = await self.db.execute(
+            select(Task).options(selectinload(Task.tags)).where(Task.id == task_id)
+        )
         return result.scalar_one_or_none()
 
     async def get_tasks_by_column(self, column_id: uuid.UUID) -> list[Task]:
@@ -86,14 +88,20 @@ class BoardRepository:
         task = Task(**kwargs)
         self.db.add(task)
         await self.db.flush()
-        return task
+        result = await self.db.execute(
+            select(Task).options(selectinload(Task.tags)).where(Task.id == task.id)
+        )
+        return result.scalar_one()
 
     async def update_task(self, task: Task, **kwargs) -> Task:
         for key, value in kwargs.items():
             if value is not None:
                 setattr(task, key, value)
         await self.db.flush()
-        return task
+        result = await self.db.execute(
+            select(Task).options(selectinload(Task.tags)).where(Task.id == task.id)
+        )
+        return result.scalar_one()
 
     async def delete_task(self, task_id: uuid.UUID) -> None:
         await self.db.execute(delete(Task).where(Task.id == task_id))
@@ -163,5 +171,5 @@ class BoardRepository:
         if deadline_to:
             stmt = stmt.where(Task.deadline <= deadline_to)
 
-        result = await self.db.execute(stmt.order_by(Task.position))
+        result = await self.db.execute(stmt.options(selectinload(Task.tags)).order_by(Task.position))
         return result.scalars().all()
