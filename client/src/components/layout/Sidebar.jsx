@@ -9,10 +9,10 @@ import {
   LogOut,
   Plus,
   ChevronDown,
-  Users,
   Sun,
   Moon,
   Globe,
+  X,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useWorkspace } from '../../context/WorkspaceContext';
@@ -27,7 +27,7 @@ const navItems = [
   { icon: Settings, labelKey: 'sidebar.settings', path: '/settings' },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ open, onClose }) {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
@@ -58,6 +58,11 @@ export default function Sidebar() {
     }
   };
 
+  const handleNav = (path) => {
+    navigate(path);
+    onClose();
+  };
+
   const toggleLang = () => {
     const newLang = i18n.language === 'ru' ? 'en' : 'ru';
     i18n.changeLanguage(newLang);
@@ -66,10 +71,25 @@ export default function Sidebar() {
 
   return (
     <>
-      <aside className="w-64 h-screen flex flex-col border-r border-[var(--color-border)] bg-surface-sidebar">
+      {/* Mobile overlay */}
+      {open && (
+        <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm md:hidden" onClick={onClose} />
+      )}
+
+      <aside
+        className={`
+          fixed inset-y-0 left-0 z-50 w-64 flex flex-col border-r border-[var(--color-border)] bg-surface-sidebar
+          transition-transform duration-300 ease-in-out
+          md:static md:translate-x-0
+          ${open ? 'translate-x-0' : '-translate-x-full'}
+        `}
+      >
         {/* Logo */}
-        <div className="p-6 pb-4">
+        <div className="p-6 pb-4 flex items-center justify-between">
           <h1 className="text-xl font-bold glow-text">Velora</h1>
+          <button onClick={onClose} className="p-1 rounded-lg hover:bg-surface-glass transition md:hidden">
+            <X size={20} />
+          </button>
         </div>
 
         {/* Workspace Switcher */}
@@ -117,7 +137,7 @@ export default function Sidebar() {
             return (
               <button
                 key={path}
-                onClick={() => navigate(path)}
+                onClick={() => handleNav(path)}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition ${
                   isActive
                     ? 'bg-violet-500/15 text-violet-400'
