@@ -131,13 +131,17 @@ export default function Chat() {
           const own = isOwnMessage(msg);
           return (
             <div key={msg.id} className={`flex gap-3 ${own ? 'flex-row-reverse' : ''}`}>
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 ${
-                own
-                  ? 'bg-gradient-to-br from-emerald-500 to-cyan-500'
-                  : 'bg-gradient-to-br from-violet-500 to-blue-500'
-              }`}>
-                {msg.author_name?.[0]?.toUpperCase() || '?'}
-              </div>
+              {msg.author_avatar ? (
+                <img src={msg.author_avatar} alt="" className="w-8 h-8 rounded-full object-cover shrink-0" />
+              ) : (
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 ${
+                  own
+                    ? 'bg-gradient-to-br from-emerald-500 to-cyan-500'
+                    : 'bg-gradient-to-br from-violet-500 to-blue-500'
+                }`}>
+                  {msg.author_name?.[0]?.toUpperCase() || '?'}
+                </div>
+              )}
               <div className={`max-w-[70%] ${own ? 'text-right' : ''}`}>
                 <div className={`flex items-center gap-2 ${own ? 'justify-end' : ''}`}>
                   <span className="text-sm font-medium">{msg.author_name || 'Unknown'}</span>

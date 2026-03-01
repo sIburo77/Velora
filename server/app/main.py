@@ -84,6 +84,7 @@ async def ws_chat(websocket: WebSocket, workspace_id: uuid.UUID, token: str = Qu
                     "file_name": msg.file_name,
                     "created_at": msg.created_at.isoformat(),
                     "author_name": msg.author.name if msg.author else None,
+                    "author_avatar": msg.author.avatar_url if msg.author else None,
                 })
         except WebSocketDisconnect:
             manager.disconnect_chat(workspace_id, user_id, websocket)

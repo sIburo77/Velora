@@ -17,5 +17,6 @@ class ChatMessageResponse(BaseModel):
     file_name: str | None = None
     created_at: datetime
     author_name: str | None = None
+    author_avatar: str | None = None
 
     model_config = {"from_attributes": True}
