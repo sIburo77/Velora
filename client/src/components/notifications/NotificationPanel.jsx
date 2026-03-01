@@ -14,7 +14,7 @@ export default function NotificationPanel({ onClose }) {
   const { notifications, markRead, markAllRead } = useNotifications();
 
   return (
-    <div className="absolute right-0 top-12 w-80 max-h-96 glass rounded-2xl border border-[var(--color-border)] shadow-xl z-50 flex flex-col overflow-hidden">
+    <div className="absolute left-0 top-12 w-80 max-h-96 glass rounded-2xl border border-[var(--color-border)] shadow-xl z-50 flex flex-col overflow-hidden">
       <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--color-border)]">
         <h3 className="font-semibold text-sm">{t('notifications.title')}</h3>
         <button

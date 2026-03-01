@@ -120,11 +120,18 @@ export default function Board() {
       if (taskModal.task) {
         await api.updateTask(currentWorkspace.id, taskModal.task.id, data);
         success(t('board.taskUpdated'));
+        setTaskModal({ open: false, columnId: null, task: null });
       } else {
-        await api.createTask(currentWorkspace.id, taskModal.columnId, data);
+        const created = await api.createTask(currentWorkspace.id, taskModal.columnId, data);
         success(t('board.taskCreated'));
+        setTaskModal({ open: true, columnId: taskModal.columnId, task: created });
+        setTaskForm({
+          title: created.title,
+          description: created.description || '',
+          priority: created.priority,
+          deadline: created.deadline ? created.deadline.slice(0, 16) : '',
+        });
       }
-      setTaskModal({ open: false, columnId: null, task: null });
       fetchBoard();
     } catch (err) {
       error(err.message);
