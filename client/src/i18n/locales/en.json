@@ -180,15 +180,90 @@
     "token": "Token",
     "createWorkspace": "Create Workspace",
     "wsName": "Workspace name",
-    "userEmail": "user@example.com"
+    "userEmail": "user@example.com",
+    "viewer": "Viewer",
+    "member": "Member",
+    "editor": "Editor",
+    "admin": "Admin",
+    "roleUpdated": "Role updated"
   },
   "sidebar": {
     "dashboard": "Dashboard",
     "board": "Board",
     "analytics": "Analytics",
     "settings": "Settings",
+    "chat": "Chat",
+    "calendar": "Calendar",
     "select": "Select",
     "newWorkspace": "New Workspace",
     "logout": "Log out"
+  },
+  "chat": {
+    "title": "Chat",
+    "connected": "Connected",
+    "disconnected": "Disconnected",
+    "empty": "No messages yet. Start the conversation!",
+    "placeholder": "Type a message...",
+    "selectWorkspace": "Select a workspace to open the chat"
+  },
+  "calendar": {
+    "title": "Calendar",
+    "selectWorkspace": "Select a workspace to view the calendar",
+    "today": "Today",
+    "noTasks": "No tasks with deadlines this month",
+    "mon": "Mon",
+    "tue": "Tue",
+    "wed": "Wed",
+    "thu": "Thu",
+    "fri": "Fri",
+    "sat": "Sat",
+    "sun": "Sun",
+    "january": "January",
+    "february": "February",
+    "march": "March",
+    "april": "April",
+    "may": "May",
+    "june": "June",
+    "july": "July",
+    "august": "August",
+    "september": "September",
+    "october": "October",
+    "november": "November",
+    "december": "December"
+  },
+  "comments": {
+    "title": "Comments",
+    "placeholder": "Write a comment...",
+    "empty": "No comments yet",
+    "deleted": "Comment deleted"
+  },
+  "attachments": {
+    "title": "Attachments",
+    "upload": "Upload",
+    "empty": "No attachments"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Mark all read",
+    "empty": "No notifications yet",
+    "comment": "New comment",
+    "mention": "You were mentioned",
+    "invitation": "New invitation",
+    "deadline": "Deadline approaching",
+    "task": "Task update"
+  },
+  "templates": {
+    "choose": "Choose a template",
+    "default": "Default",
+    "scrum": "Scrum",
+    "marketing": "Marketing",
+    "personal": "Personal"
+  },
+  "roles": {
+    "viewer": "Viewer",
+    "member": "Member",
+    "editor": "Editor",
+    "admin": "Admin",
+    "roleUpdated": "Role updated"
   }
 }

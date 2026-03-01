@@ -13,16 +13,22 @@ import {
   Moon,
   Globe,
   X,
+  MessageCircle,
+  CalendarDays,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { useTheme } from '../../context/ThemeContext';
 import Modal from '../ui/Modal';
 import { useToast } from '../../context/ToastContext';
+import NotificationBell from '../notifications/NotificationBell';
+import TemplatePicker from '../workspace/TemplatePicker';
 
 const navItems = [
   { icon: LayoutDashboard, labelKey: 'sidebar.dashboard', path: '/dashboard' },
   { icon: Kanban, labelKey: 'sidebar.board', path: '/board' },
+  { icon: CalendarDays, labelKey: 'sidebar.calendar', path: '/calendar' },
+  { icon: MessageCircle, labelKey: 'sidebar.chat', path: '/chat' },
   { icon: BarChart3, labelKey: 'sidebar.analytics', path: '/analytics' },
   { icon: Settings, labelKey: 'sidebar.settings', path: '/settings' },
 ];
@@ -38,6 +44,7 @@ export default function Sidebar({ open, onClose }) {
   const [showWs, setShowWs] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [newWsName, setNewWsName] = useState('');
+  const [newWsTemplate, setNewWsTemplate] = useState('default');
 
   const handleLogout = () => {
     resetWorkspace();
@@ -49,8 +56,9 @@ export default function Sidebar({ open, onClose }) {
     e.preventDefault();
     if (!newWsName.trim()) return;
     try {
-      await createWorkspace({ name: newWsName.trim() });
+      await createWorkspace({ name: newWsName.trim(), template: newWsTemplate });
       setNewWsName('');
+      setNewWsTemplate('default');
       setShowCreate(false);
       success(t('settings.wsCreated'));
     } catch (err) {
@@ -87,9 +95,14 @@ export default function Sidebar({ open, onClose }) {
         {/* Logo */}
         <div className="p-6 pb-4 flex items-center justify-between">
           <h1 className="text-xl font-bold glow-text">Velora</h1>
-          <button onClick={onClose} className="p-1 rounded-lg hover:bg-surface-glass transition md:hidden">
-            <X size={20} />
-          </button>
+          <div className="flex items-center gap-1">
+            <div className="hidden md:block">
+              <NotificationBell />
+            </div>
+            <button onClick={onClose} className="p-1 rounded-lg hover:bg-surface-glass transition md:hidden">
+              <X size={20} />
+            </button>
+          </div>
         </div>
 
         {/* Workspace Switcher */}
@@ -194,6 +207,7 @@ export default function Sidebar({ open, onClose }) {
             onChange={(e) => setNewWsName(e.target.value)}
             autoFocus
           />
+          <TemplatePicker value={newWsTemplate} onChange={setNewWsTemplate} />
           <button type="submit" className="btn-primary w-full">{t('common.create')}</button>
         </form>
       </Modal>

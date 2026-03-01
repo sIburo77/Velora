@@ -6,6 +6,7 @@ from pydantic import BaseModel
 
 class WorkspaceCreate(BaseModel):
     name: str
+    template: str | None = None
 
 
 class WorkspaceUpdate(BaseModel):
@@ -19,6 +20,10 @@ class WorkspaceResponse(BaseModel):
     role: str | None = None
 
     model_config = {"from_attributes": True}
+
+
+class RoleUpdate(BaseModel):
+    role: str
 
 
 class WorkspaceMemberResponse(BaseModel):

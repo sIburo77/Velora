@@ -1,4 +1,6 @@
 import uuid
+from datetime import datetime, timezone
+from calendar import monthrange
 
 from app.core.exceptions import NotFoundError, ForbiddenError
 from app.repositories.board_repo import BoardRepository
@@ -14,6 +16,7 @@ from app.schemas.board import (
     TaskMove,
     TaskResponse,
     AnalyticsResponse,
+    CalendarTaskResponse,
 )
 
 
@@ -22,10 +25,17 @@ class BoardService:
         self.board_repo = board_repo
         self.workspace_repo = workspace_repo
 
-    async def _check_membership(self, workspace_id: uuid.UUID, user_id: uuid.UUID) -> None:
+    async def _check_membership(self, workspace_id: uuid.UUID, user_id: uuid.UUID) -> str:
         member = await self.workspace_repo.get_member(workspace_id, user_id)
         if not member:
             raise ForbiddenError("Not a member of this workspace")
+        return member.role
+
+    async def _check_can_edit(self, workspace_id: uuid.UUID, user_id: uuid.UUID) -> str:
+        role = await self._check_membership(workspace_id, user_id)
+        if role == "viewer":
+            raise ForbiddenError("Viewers cannot modify the board")
+        return role
 
     async def get_board(self, workspace_id: uuid.UUID, user_id: uuid.UUID) -> BoardFullResponse:
         await self._check_membership(workspace_id, user_id)
@@ -59,7 +69,7 @@ class BoardService:
     async def create_column(
         self, workspace_id: uuid.UUID, data: ColumnCreate, user_id: uuid.UUID
     ) -> ColumnResponse:
-        await self._check_membership(workspace_id, user_id)
+        await self._check_can_edit(workspace_id, user_id)
         board = await self.board_repo.get_by_workspace(workspace_id)
         if not board:
             raise NotFoundError("Board not found")
@@ -74,7 +84,7 @@ class BoardService:
     async def update_column(
         self, workspace_id: uuid.UUID, column_id: uuid.UUID, data: ColumnUpdate, user_id: uuid.UUID
     ) -> ColumnResponse:
-        await self._check_membership(workspace_id, user_id)
+        await self._check_can_edit(workspace_id, user_id)
         column = await self.board_repo.get_column(column_id)
         if not column:
             raise NotFoundError("Column not found")
@@ -91,7 +101,7 @@ class BoardService:
     async def delete_column(
         self, workspace_id: uuid.UUID, column_id: uuid.UUID, user_id: uuid.UUID
     ) -> None:
-        await self._check_membership(workspace_id, user_id)
+        await self._check_can_edit(workspace_id, user_id)
         column = await self.board_repo.get_column(column_id)
         if not column:
             raise NotFoundError("Column not found")
@@ -100,7 +110,7 @@ class BoardService:
     async def reorder_columns(
         self, workspace_id: uuid.UUID, column_ids: list[uuid.UUID], user_id: uuid.UUID
     ) -> list[ColumnResponse]:
-        await self._check_membership(workspace_id, user_id)
+        await self._check_can_edit(workspace_id, user_id)
         result = []
         for position, col_id in enumerate(column_ids):
             column = await self.board_repo.get_column(col_id)
@@ -113,7 +123,7 @@ class BoardService:
     async def create_task(
         self, workspace_id: uuid.UUID, column_id: uuid.UUID, data: TaskCreate, user_id: uuid.UUID
     ) -> TaskResponse:
-        await self._check_membership(workspace_id, user_id)
+        await self._check_can_edit(workspace_id, user_id)
         column = await self.board_repo.get_column(column_id)
         if not column:
             raise NotFoundError("Column not found")
@@ -134,7 +144,7 @@ class BoardService:
     async def update_task(
         self, workspace_id: uuid.UUID, task_id: uuid.UUID, data: TaskUpdate, user_id: uuid.UUID
     ) -> TaskResponse:
-        await self._check_membership(workspace_id, user_id)
+        await self._check_can_edit(workspace_id, user_id)
         task = await self.board_repo.get_task(task_id)
         if not task:
             raise NotFoundError("Task not found")
@@ -151,7 +161,7 @@ class BoardService:
     async def delete_task(
         self, workspace_id: uuid.UUID, task_id: uuid.UUID, user_id: uuid.UUID
     ) -> None:
-        await self._check_membership(workspace_id, user_id)
+        await self._check_can_edit(workspace_id, user_id)
         task = await self.board_repo.get_task(task_id)
         if not task:
             raise NotFoundError("Task not found")
@@ -160,7 +170,7 @@ class BoardService:
     async def move_task(
         self, workspace_id: uuid.UUID, task_id: uuid.UUID, data: TaskMove, user_id: uuid.UUID
     ) -> TaskResponse:
-        await self._check_membership(workspace_id, user_id)
+        await self._check_can_edit(workspace_id, user_id)
         task = await self.board_repo.get_task(task_id)
         if not task:
             raise NotFoundError("Task not found")
@@ -192,6 +202,32 @@ class BoardService:
             board.id, query=query, priority=priority, is_completed=is_completed, has_deadline=has_deadline
         )
         return [TaskResponse.model_validate(t) for t in tasks]
+
+    # Calendar
+    async def get_calendar_tasks(
+        self, workspace_id: uuid.UUID, user_id: uuid.UUID, year: int, month: int
+    ) -> list[CalendarTaskResponse]:
+        await self._check_membership(workspace_id, user_id)
+        board = await self.board_repo.get_by_workspace(workspace_id)
+        if not board:
+            return []
+
+        start = datetime(year, month, 1, tzinfo=timezone.utc)
+        _, last_day = monthrange(year, month)
+        end = datetime(year, month, last_day, 23, 59, 59, tzinfo=timezone.utc)
+
+        tasks = await self.board_repo.get_tasks_by_deadline_range(board.id, start, end)
+        return [
+            CalendarTaskResponse(
+                id=t.id,
+                title=t.title,
+                deadline=t.deadline,
+                priority=t.priority,
+                is_completed=t.is_completed,
+                column_id=t.column_id,
+            )
+            for t in tasks
+        ]
 
     # Analytics
     async def get_analytics(self, workspace_id: uuid.UUID, user_id: uuid.UUID) -> AnalyticsResponse:

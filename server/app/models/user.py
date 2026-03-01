@@ -22,3 +22,4 @@ class User(Base):
     )
 
     workspace_memberships = relationship("WorkspaceMember", back_populates="user", cascade="all, delete-orphan")
+    notifications = relationship("Notification", back_populates="user", cascade="all, delete-orphan")

@@ -25,8 +25,8 @@ class InvitationService:
         self, workspace_id: uuid.UUID, data: InvitationCreate, user_id: uuid.UUID
     ) -> InvitationResponse:
         member = await self.workspace_repo.get_member(workspace_id, user_id)
-        if not member or member.role != "owner":
-            raise ForbiddenError("Only workspace owner can invite members")
+        if not member or member.role != "admin":
+            raise ForbiddenError("Only workspace admin can invite members")
 
         existing_member_user = await self.user_repo.get_by_email(data.email)
         if existing_member_user:

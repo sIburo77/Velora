@@ -8,6 +8,7 @@ import { useToast } from '../context/ToastContext';
 import api from '../services/api';
 import Loader from '../components/ui/Loader';
 import Modal from '../components/ui/Modal';
+import TemplatePicker from '../components/workspace/TemplatePicker';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -20,13 +21,15 @@ export default function Dashboard() {
   const [pendingInvitations, setPendingInvitations] = useState([]);
   const [showCreate, setShowCreate] = useState(false);
   const [newWsName, setNewWsName] = useState('');
+  const [newWsTemplate, setNewWsTemplate] = useState('default');
 
   const handleCreate = async (e) => {
     e.preventDefault();
     if (!newWsName.trim()) return;
     try {
-      await createWorkspace({ name: newWsName.trim() });
+      await createWorkspace({ name: newWsName.trim(), template: newWsTemplate });
       setNewWsName('');
+      setNewWsTemplate('default');
       setShowCreate(false);
       success(t('settings.wsCreated'));
     } catch (err) {
@@ -120,6 +123,7 @@ export default function Dashboard() {
               onChange={(e) => setNewWsName(e.target.value)}
               autoFocus
             />
+            <TemplatePicker value={newWsTemplate} onChange={setNewWsTemplate} />
             <button type="submit" className="btn-primary w-full">
               {t('common.create')}
             </button>

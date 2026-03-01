@@ -1,0 +1,19 @@
+import uuid
+from datetime import datetime
+
+from pydantic import BaseModel
+
+
+class ChatMessageCreate(BaseModel):
+    content: str
+
+
+class ChatMessageResponse(BaseModel):
+    id: uuid.UUID
+    workspace_id: uuid.UUID
+    author_id: uuid.UUID | None
+    content: str
+    created_at: datetime
+    author_name: str | None = None
+
+    model_config = {"from_attributes": True}

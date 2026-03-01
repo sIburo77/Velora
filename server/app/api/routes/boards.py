@@ -13,6 +13,7 @@ from app.schemas.board import (
     TaskMove,
     TaskResponse,
     AnalyticsResponse,
+    CalendarTaskResponse,
 )
 from app.services.board_service import BoardService
 
@@ -131,6 +132,18 @@ async def search_tasks(
         workspace_id, user_id, query=q, priority=priority,
         is_completed=is_completed, has_deadline=has_deadline,
     )
+
+
+# Calendar
+@router.get("/tasks/calendar", response_model=list[CalendarTaskResponse])
+async def get_calendar_tasks(
+    workspace_id: uuid.UUID,
+    user_id: uuid.UUID = Depends(get_current_user_id),
+    service: BoardService = Depends(get_board_service),
+    year: int = Query(...),
+    month: int = Query(..., ge=1, le=12),
+):
+    return await service.get_calendar_tasks(workspace_id, user_id, year, month)
 
 
 # Analytics

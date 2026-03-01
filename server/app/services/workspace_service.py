@@ -8,7 +8,14 @@ from app.schemas.workspace import (
     WorkspaceUpdate,
     WorkspaceResponse,
     WorkspaceMemberResponse,
+    RoleUpdate,
 )
+
+WORKSPACE_TEMPLATES = {
+    "scrum": ["Backlog", "To Do", "In Progress", "Review", "Done"],
+    "marketing": ["Ideas", "Planning", "In Progress", "Review", "Published"],
+    "personal": ["To Do", "In Progress", "Done"],
+}
 
 
 class WorkspaceService:
@@ -18,13 +25,20 @@ class WorkspaceService:
 
     async def create_workspace(self, data: WorkspaceCreate, owner_id: uuid.UUID) -> WorkspaceResponse:
         workspace = await self.workspace_repo.create(name=data.name)
-        await self.workspace_repo.add_member(workspace.id, owner_id, role="owner")
-        await self.board_repo.create(workspace.id)
+        await self.workspace_repo.add_member(workspace.id, owner_id, role="admin")
+        board = await self.board_repo.create(workspace.id)
+
+        # Create template columns
+        template_name = data.template or "default"
+        columns = WORKSPACE_TEMPLATES.get(template_name, ["To Do", "In Progress", "Done"])
+        for i, col_name in enumerate(columns):
+            await self.board_repo.create_column(board.id, col_name, i)
+
         return WorkspaceResponse(
             id=workspace.id,
             name=workspace.name,
             created_at=workspace.created_at,
-            role="owner",
+            role="admin",
         )
 
     async def get_user_workspaces(self, user_id: uuid.UUID) -> list[WorkspaceResponse]:
@@ -37,17 +51,17 @@ class WorkspaceService:
     async def update_workspace(
         self, workspace_id: uuid.UUID, data: WorkspaceUpdate, user_id: uuid.UUID
     ) -> WorkspaceResponse:
-        await self._check_owner(workspace_id, user_id)
+        await self._check_admin(workspace_id, user_id)
         workspace = await self.workspace_repo.get_by_id(workspace_id)
         if not workspace:
             raise NotFoundError("Workspace not found")
         updated = await self.workspace_repo.update(workspace, name=data.name)
         return WorkspaceResponse(
-            id=updated.id, name=updated.name, created_at=updated.created_at, role="owner"
+            id=updated.id, name=updated.name, created_at=updated.created_at, role="admin"
         )
 
     async def delete_workspace(self, workspace_id: uuid.UUID, user_id: uuid.UUID) -> None:
-        await self._check_owner(workspace_id, user_id)
+        await self._check_admin(workspace_id, user_id)
         await self.workspace_repo.delete(workspace_id)
 
     async def get_members(self, workspace_id: uuid.UUID, user_id: uuid.UUID) -> list[WorkspaceMemberResponse]:
@@ -65,21 +79,46 @@ class WorkspaceService:
             for m in members
         ]
 
+    async def update_member_role(
+        self, workspace_id: uuid.UUID, member_user_id: uuid.UUID, data: RoleUpdate, user_id: uuid.UUID
+    ) -> WorkspaceMemberResponse:
+        await self._check_admin(workspace_id, user_id)
+
+        if member_user_id == user_id:
+            raise BadRequestError("Cannot change your own role")
+
+        if data.role not in ("admin", "editor", "member", "viewer"):
+            raise BadRequestError("Invalid role")
+
+        member = await self.workspace_repo.get_member(workspace_id, member_user_id)
+        if not member:
+            raise NotFoundError("Member not found")
+
+        await self.workspace_repo.update_member_role(workspace_id, member_user_id, data.role)
+        member = await self.workspace_repo.get_member(workspace_id, member_user_id)
+
+        return WorkspaceMemberResponse(
+            id=member.id,
+            user_id=member.user_id,
+            role=member.role,
+            joined_at=member.joined_at,
+        )
+
     async def remove_member(
         self, workspace_id: uuid.UUID, member_user_id: uuid.UUID, user_id: uuid.UUID
     ) -> None:
-        await self._check_owner(workspace_id, user_id)
+        await self._check_admin(workspace_id, user_id)
         if member_user_id == user_id:
-            raise BadRequestError("Cannot remove yourself as owner")
+            raise BadRequestError("Cannot remove yourself as admin")
         member = await self.workspace_repo.get_member(workspace_id, member_user_id)
         if not member:
             raise NotFoundError("Member not found")
         await self.workspace_repo.remove_member(workspace_id, member_user_id)
 
-    async def _check_owner(self, workspace_id: uuid.UUID, user_id: uuid.UUID) -> None:
+    async def _check_admin(self, workspace_id: uuid.UUID, user_id: uuid.UUID) -> None:
         member = await self.workspace_repo.get_member(workspace_id, user_id)
-        if not member or member.role != "owner":
-            raise ForbiddenError("Only workspace owner can perform this action")
+        if not member or member.role != "admin":
+            raise ForbiddenError("Only workspace admin can perform this action")
 
     async def _check_membership(self, workspace_id: uuid.UUID, user_id: uuid.UUID) -> None:
         member = await self.workspace_repo.get_member(workspace_id, user_id)

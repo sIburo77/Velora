@@ -80,6 +80,17 @@ class BoardFullResponse(BoardResponse):
     columns: list[ColumnWithTasksResponse] = []
 
 
+class CalendarTaskResponse(BaseModel):
+    id: uuid.UUID
+    title: str
+    deadline: datetime | None
+    priority: str
+    is_completed: bool
+    column_id: uuid.UUID
+
+    model_config = {"from_attributes": True}
+
+
 class AnalyticsResponse(BaseModel):
     total_tasks: int
     completed_tasks: int

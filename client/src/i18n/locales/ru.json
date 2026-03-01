@@ -180,15 +180,90 @@
     "token": "Токен",
     "createWorkspace": "Создать пространство",
     "wsName": "Название пространства",
-    "userEmail": "user@example.com"
+    "userEmail": "user@example.com",
+    "viewer": "Наблюдатель",
+    "member": "Участник",
+    "editor": "Редактор",
+    "admin": "Администратор",
+    "roleUpdated": "Роль обновлена"
   },
   "sidebar": {
     "dashboard": "Главная",
     "board": "Доска",
     "analytics": "Аналитика",
     "settings": "Настройки",
+    "chat": "Чат",
+    "calendar": "Календарь",
     "select": "Выбрать",
     "newWorkspace": "Новое пространство",
     "logout": "Выйти"
+  },
+  "chat": {
+    "title": "Чат",
+    "connected": "Подключено",
+    "disconnected": "Отключено",
+    "empty": "Сообщений пока нет. Начните общение!",
+    "placeholder": "Введите сообщение...",
+    "selectWorkspace": "Выберите пространство для чата"
+  },
+  "calendar": {
+    "title": "Календарь",
+    "selectWorkspace": "Выберите пространство для просмотра календаря",
+    "today": "Сегодня",
+    "noTasks": "Нет задач с дедлайнами в этом месяце",
+    "mon": "Пн",
+    "tue": "Вт",
+    "wed": "Ср",
+    "thu": "Чт",
+    "fri": "Пт",
+    "sat": "Сб",
+    "sun": "Вс",
+    "january": "Январь",
+    "february": "Февраль",
+    "march": "Март",
+    "april": "Апрель",
+    "may": "Май",
+    "june": "Июнь",
+    "july": "Июль",
+    "august": "Август",
+    "september": "Сентябрь",
+    "october": "Октябрь",
+    "november": "Ноябрь",
+    "december": "Декабрь"
+  },
+  "comments": {
+    "title": "Комментарии",
+    "placeholder": "Написать комментарий...",
+    "empty": "Комментариев пока нет",
+    "deleted": "Комментарий удалён"
+  },
+  "attachments": {
+    "title": "Вложения",
+    "upload": "Загрузить",
+    "empty": "Нет вложений"
+  },
+  "notifications": {
+    "title": "Уведомления",
+    "markAllRead": "Прочитать все",
+    "empty": "Уведомлений пока нет",
+    "comment": "Новый комментарий",
+    "mention": "Вас упомянули",
+    "invitation": "Новое приглашение",
+    "deadline": "Приближается дедлайн",
+    "task": "Обновление задачи"
+  },
+  "templates": {
+    "choose": "Выберите шаблон",
+    "default": "Стандартный",
+    "scrum": "Scrum",
+    "marketing": "Маркетинг",
+    "personal": "Личный"
+  },
+  "roles": {
+    "viewer": "Наблюдатель",
+    "member": "Участник",
+    "editor": "Редактор",
+    "admin": "Администратор",
+    "roleUpdated": "Роль обновлена"
   }
 }
