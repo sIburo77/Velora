@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BarChart3, CheckCircle, Clock, Layers, Flag, TrendingUp } from 'lucide-react';
+import { BarChart3, CheckCircle, Clock, Layers, Flag, TrendingUp, Users } from 'lucide-react';
 import { useWorkspace } from '../context/WorkspaceContext';
 import api from '../services/api';
-import Loader from '../components/ui/Loader';
+import { SkeletonStat, SkeletonLine } from '../components/ui/Skeleton';
 
 export default function Analytics() {
   const { t } = useTranslation();
@@ -23,7 +23,36 @@ export default function Analytics() {
       .finally(() => setLoading(false));
   }, [currentWorkspace]);
 
-  if (loading) return <Loader />;
+  if (loading) {
+    return (
+      <div className="max-w-5xl mx-auto">
+        <div className="h-8 w-32 rounded bg-surface-elevated animate-pulse mb-6" />
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+          <SkeletonStat />
+          <SkeletonStat />
+          <SkeletonStat />
+        </div>
+        <div className="card mb-6">
+          <SkeletonLine className="h-4 w-40 mb-4" />
+          <SkeletonLine className="h-4 w-full rounded-full" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="card space-y-3">
+            <SkeletonLine className="h-4 w-36" />
+            <SkeletonLine className="h-2 w-full rounded-full" />
+            <SkeletonLine className="h-2 w-3/4 rounded-full" />
+            <SkeletonLine className="h-2 w-1/2 rounded-full" />
+          </div>
+          <div className="card space-y-3">
+            <SkeletonLine className="h-4 w-36" />
+            <SkeletonLine className="h-2 w-full rounded-full" />
+            <SkeletonLine className="h-2 w-2/3 rounded-full" />
+            <SkeletonLine className="h-2 w-1/3 rounded-full" />
+          </div>
+        </div>
+      </div>
+    );
+  }
   if (!currentWorkspace || !data) return <div className="text-content-secondary text-center mt-20">{t('analytics.noData')}</div>;
 
   const maxColCount = Math.max(...Object.values(data.by_column), 1);
@@ -153,6 +182,42 @@ export default function Analytics() {
           )}
         </div>
       </div>
+
+      {/* Team Performance */}
+      {data.by_member?.length > 0 && (
+        <div className="card mt-6">
+          <h3 className="font-semibold mb-4 flex items-center gap-2">
+            <Users size={18} className="text-violet-400" /> {t('analytics.teamPerformance')}
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {data.by_member.map((m) => (
+              <div key={m.user_id} className="flex items-center gap-3 p-3 rounded-xl bg-surface-elevated border border-[var(--color-border)]">
+                {m.avatar_url ? (
+                  <img src={m.avatar_url} alt="" className="w-9 h-9 rounded-full object-cover shrink-0" />
+                ) : (
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-violet-500 to-blue-500 flex items-center justify-center text-xs font-bold text-white shrink-0">
+                    {m.user_name?.[0]?.toUpperCase() || '?'}
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{m.user_name}</p>
+                  <div className="flex items-center gap-3 text-xs text-content-secondary mt-0.5">
+                    <span>{m.tasks_created} {t('analytics.tasksCreated')}</span>
+                    <span>{m.tasks_completed} {t('analytics.tasksCompleted')}</span>
+                  </div>
+                  <div className="w-full h-1.5 rounded-full bg-surface-glass mt-1.5 overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 transition-all"
+                      style={{ width: `${m.completion_rate}%` }}
+                    />
+                  </div>
+                </div>
+                <span className="text-xs font-medium text-emerald-400 shrink-0">{m.completion_rate}%</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

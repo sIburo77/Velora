@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Paperclip, Download, Trash2, Upload } from 'lucide-react';
 import api from '../../services/api';
+import DropZone from '../ui/DropZone';
 
 export default function AttachmentList({ workspaceId, taskId, canEdit }) {
   const { t } = useTranslation();
@@ -14,8 +15,7 @@ export default function AttachmentList({ workspaceId, taskId, canEdit }) {
     api.getAttachments(workspaceId, taskId).then(setAttachments).catch(() => {});
   }, [workspaceId, taskId]);
 
-  const upload = async (e) => {
-    const file = e.target.files?.[0];
+  const uploadFile = async (file) => {
     if (!file) return;
     setUploading(true);
     try {
@@ -23,6 +23,11 @@ export default function AttachmentList({ workspaceId, taskId, canEdit }) {
       setAttachments((prev) => [attachment, ...prev]);
     } catch {}
     setUploading(false);
+  };
+
+  const upload = async (e) => {
+    const file = e.target.files?.[0];
+    await uploadFile(file);
     if (fileRef.current) fileRef.current.value = '';
   };
 
@@ -58,7 +63,7 @@ export default function AttachmentList({ workspaceId, taskId, canEdit }) {
   };
 
   return (
-    <div className="mt-3">
+    <DropZone onFileDrop={uploadFile} className="mt-3">
       <div className="flex items-center justify-between mb-2">
         <h4 className="text-sm font-medium flex items-center gap-1">
           <Paperclip size={14} /> {t('attachments.title')}
@@ -104,6 +109,6 @@ export default function AttachmentList({ workspaceId, taskId, canEdit }) {
           ))}
         </div>
       )}
-    </div>
+    </DropZone>
   );
 }

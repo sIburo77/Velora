@@ -11,7 +11,8 @@
     "add": "Add",
     "invite": "Invite",
     "lightMode": "Light Mode",
-    "darkMode": "Dark Mode"
+    "darkMode": "Dark Mode",
+    "dropFileHere": "Drop file here"
   },
   "landing": {
     "badge": "Now in beta — free for all teams",
@@ -135,7 +136,13 @@
     "columnName": "Column name",
     "taskTitle": "Task title",
     "optionalDesc": "Optional description",
-    "column": "Column"
+    "column": "Column",
+    "tags": "Tags",
+    "addTag": "Add tag",
+    "createTag": "Create",
+    "tagName": "Tag name",
+    "noTags": "No tags",
+    "noMoreTags": "No more tags to add"
   },
   "analytics": {
     "title": "Analytics",
@@ -152,7 +159,10 @@
     "noData": "No data available",
     "high": "High",
     "medium": "Medium",
-    "low": "Low"
+    "low": "Low",
+    "teamPerformance": "Team Performance",
+    "tasksCreated": "created",
+    "tasksCompleted": "completed"
   },
   "settings": {
     "title": "Settings",
@@ -206,7 +216,9 @@
     "disconnected": "Disconnected",
     "empty": "No messages yet. Start the conversation!",
     "placeholder": "Type a message...",
-    "selectWorkspace": "Select a workspace to open the chat"
+    "selectWorkspace": "Select a workspace to open the chat",
+    "reply": "Reply",
+    "replyingTo": "Replying to"
   },
   "calendar": {
     "title": "Calendar",

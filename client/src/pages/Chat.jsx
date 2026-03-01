@@ -1,11 +1,14 @@
 import { useEffect, useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Send, Paperclip, FileText, Download, X } from 'lucide-react';
+import { Send, Paperclip, FileText, Download, X, Reply } from 'lucide-react';
 import { useWorkspace } from '../context/WorkspaceContext';
 import { useAuth } from '../context/AuthContext';
 import { createChatSocket } from '../services/websocket';
 import api from '../services/api';
-import Loader from '../components/ui/Loader';
+import { SkeletonMessage } from '../components/ui/Skeleton';
+import Markdown from '../components/ui/Markdown';
+import MentionInput from '../components/ui/MentionInput';
+import DropZone from '../components/ui/DropZone';
 
 export default function Chat() {
   const { t } = useTranslation();
@@ -17,6 +20,8 @@ export default function Chat() {
   const [connected, setConnected] = useState(false);
   const [pendingFile, setPendingFile] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [replyTo, setReplyTo] = useState(null);
+  const [members, setMembers] = useState([]);
   const wsRef = useRef(null);
   const bottomRef = useRef(null);
   const containerRef = useRef(null);
@@ -55,6 +60,11 @@ export default function Chat() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  useEffect(() => {
+    if (!currentWorkspace) return;
+    api.getMembers(currentWorkspace.id).then(setMembers).catch(() => {});
+  }, [currentWorkspace]);
+
   const send = async (e) => {
     e.preventDefault();
     if ((!text.trim() && !pendingFile) || !wsRef.current) return;
@@ -78,8 +88,12 @@ export default function Chat() {
       payload.file_url = fileData.file_url;
       payload.file_name = fileData.file_name;
     }
+    if (replyTo) {
+      payload.reply_to_id = replyTo.id;
+    }
     wsRef.current.send(JSON.stringify(payload));
     setText('');
+    setReplyTo(null);
   };
 
   const handleFileSelect = (e) => {
@@ -109,13 +123,28 @@ export default function Chat() {
     } catch {}
   };
 
-  if (loading) return <Loader />;
+  if (loading) {
+    return (
+      <div className="flex flex-col h-[calc(100vh-6rem)] md:h-[calc(100vh-3rem)] max-w-4xl mx-auto">
+        <div className="flex items-center justify-between mb-4">
+          <div className="h-8 w-24 rounded bg-surface-elevated animate-pulse" />
+        </div>
+        <div className="flex-1 glass rounded-2xl p-4 space-y-3">
+          <SkeletonMessage />
+          <SkeletonMessage own />
+          <SkeletonMessage />
+          <SkeletonMessage own />
+          <SkeletonMessage />
+        </div>
+      </div>
+    );
+  }
   if (!currentWorkspace) {
     return <div className="text-center text-content-secondary mt-20">{t('chat.selectWorkspace')}</div>;
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-6rem)] md:h-[calc(100vh-3rem)] max-w-4xl mx-auto">
+    <DropZone onFileDrop={(file) => setPendingFile(file)} className="flex flex-col h-[calc(100vh-6rem)] md:h-[calc(100vh-3rem)] max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">{t('chat.title')}</h1>
         <span className={`text-xs px-2 py-1 rounded-full ${connected ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
@@ -130,7 +159,7 @@ export default function Chat() {
         {messages.map((msg) => {
           const own = isOwnMessage(msg);
           return (
-            <div key={msg.id} className={`flex gap-3 ${own ? 'flex-row-reverse' : ''}`}>
+            <div key={msg.id} className={`flex gap-3 group ${own ? 'flex-row-reverse' : ''}`}>
               {msg.author_avatar ? (
                 <img src={msg.author_avatar} alt="" className="w-8 h-8 rounded-full object-cover shrink-0" />
               ) : (
@@ -148,12 +177,24 @@ export default function Chat() {
                   <span className="text-xs text-content-muted">
                     {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>
+                  <button
+                    onClick={() => setReplyTo(msg)}
+                    className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-surface-glass text-content-muted hover:text-violet-400 transition"
+                  >
+                    <Reply size={12} />
+                  </button>
                 </div>
                 <div className={`mt-1 inline-block rounded-2xl px-4 py-2 ${
                   own
                     ? 'bg-violet-500/20 border border-violet-500/30 rounded-tr-md'
                     : 'bg-surface-elevated border border-[var(--color-border)] rounded-tl-md'
                 }`}>
+                  {msg.reply_to_content && (
+                    <div className={`mb-2 px-2 py-1 rounded-lg border-l-2 border-violet-500/50 text-xs text-content-muted ${own ? 'text-left' : ''}`}>
+                      <span className="font-medium text-violet-400">{msg.reply_to_author_name || 'Unknown'}</span>
+                      <p className="truncate max-w-[200px]">{msg.reply_to_content}</p>
+                    </div>
+                  )}
                   {msg.file_url && (
                     <div className={msg.content ? 'mb-1' : ''}>
 
@@ -176,9 +217,7 @@ export default function Chat() {
                       )}
                     </div>
                   )}
-                  {msg.content && (
-                    <p className="text-sm break-words whitespace-pre-wrap">{msg.content}</p>
-                  )}
+                  {msg.content && <Markdown content={msg.content} />}
                 </div>
               </div>
             </div>
@@ -186,6 +225,19 @@ export default function Chat() {
         })}
         <div ref={bottomRef} />
       </div>
+
+      {replyTo && (
+        <div className="flex items-center gap-2 mb-2 px-3 py-2 glass rounded-xl border-l-2 border-violet-500">
+          <Reply size={14} className="text-violet-400 shrink-0" />
+          <div className="flex-1 min-w-0">
+            <span className="text-xs font-medium text-violet-400">{replyTo.author_name || 'Unknown'}</span>
+            <p className="text-xs text-content-muted truncate">{replyTo.content || replyTo.file_name || '...'}</p>
+          </div>
+          <button onClick={() => setReplyTo(null)} className="text-content-muted hover:text-red-400 shrink-0">
+            <X size={14} />
+          </button>
+        </div>
+      )}
 
       {pendingFile && (
         <div className="flex items-center gap-2 mb-2 px-2">
@@ -202,17 +254,20 @@ export default function Chat() {
           <input ref={fileRef} type="file" className="hidden" onChange={handleFileSelect} />
           <Paperclip size={18} />
         </label>
-        <input
+        <MentionInput
           className="input-field flex-1"
           placeholder={t('chat.placeholder')}
           value={text}
-          onChange={(e) => setText(e.target.value)}
+          onChange={setText}
+          onSubmit={send}
+          members={members}
           autoFocus
+          disabled={!connected || uploading}
         />
         <button type="submit" className="btn-primary px-6" disabled={!connected || uploading}>
           <Send size={18} />
         </button>
       </form>
-    </div>
+    </DropZone>
   );
 }

@@ -3,6 +3,8 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
+from app.schemas.tag import TagResponse
+
 
 class BoardResponse(BaseModel):
     id: uuid.UUID
@@ -72,6 +74,7 @@ class TaskResponse(BaseModel):
     created_by: uuid.UUID
     created_at: datetime
     updated_at: datetime
+    tags: list[TagResponse] = []
 
     model_config = {"from_attributes": True}
 
@@ -91,9 +94,23 @@ class CalendarTaskResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class TaskReorder(BaseModel):
+    task_ids: list[uuid.UUID]
+
+
+class MemberStatResponse(BaseModel):
+    user_id: uuid.UUID
+    user_name: str | None
+    avatar_url: str | None
+    tasks_created: int
+    tasks_completed: int
+    completion_rate: float
+
+
 class AnalyticsResponse(BaseModel):
     total_tasks: int
     completed_tasks: int
     completion_rate: float
     by_column: dict[str, int]
     by_priority: dict[str, int]
+    by_member: list[MemberStatResponse] = []

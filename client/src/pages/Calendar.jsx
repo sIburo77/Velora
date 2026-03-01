@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useWorkspace } from '../context/WorkspaceContext';
 import api from '../services/api';
-import Loader from '../components/ui/Loader';
+import { SkeletonCalendar } from '../components/ui/Skeleton';
 
 const priorityDots = { high: 'bg-red-500', medium: 'bg-amber-500', low: 'bg-emerald-500' };
 
@@ -32,7 +32,7 @@ export default function Calendar() {
   const prev = () => setDate(new Date(year, month - 1, 1));
   const next = () => setDate(new Date(year, month + 1, 1));
 
-  if (loading) return <Loader />;
+  if (loading) return <SkeletonCalendar />;
   if (!currentWorkspace) {
     return <div className="text-center text-content-secondary mt-20">{t('calendar.selectWorkspace')}</div>;
   }

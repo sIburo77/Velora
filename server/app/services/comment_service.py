@@ -79,13 +79,18 @@ class CommentService:
                 task_id=task_id,
             )
 
-        # Handle @mentions
+        # Handle @mentions (by email and by name)
+        notified_ids = set()
+        if task.assigned_to and task.assigned_to != user_id:
+            notified_ids.add(task.assigned_to)
+
         mentioned_emails = re.findall(r'@([\w.+-]+@[\w-]+\.[\w.]+)', data.content)
         for email in mentioned_emails:
             mentioned_user = await self.user_repo.get_by_email(email)
-            if mentioned_user and mentioned_user.id != user_id:
+            if mentioned_user and mentioned_user.id != user_id and mentioned_user.id not in notified_ids:
                 member = await self.workspace_repo.get_member(workspace_id, mentioned_user.id)
                 if member:
+                    notified_ids.add(mentioned_user.id)
                     await self.notification_repo.create(
                         user_id=mentioned_user.id,
                         type="mention",
@@ -94,6 +99,25 @@ class CommentService:
                         workspace_id=workspace_id,
                         task_id=task_id,
                     )
+
+        # Match @Name mentions against workspace members
+        mentioned_names = re.findall(r'@([A-Za-zА-Яа-яёЁ][\w\s]*?)(?=\s@|[.,!?;:\n]|$)', data.content)
+        if mentioned_names:
+            members = await self.workspace_repo.get_members(workspace_id)
+            for m in members:
+                if m.user and m.user_id != user_id and m.user_id not in notified_ids:
+                    for name in mentioned_names:
+                        if m.user.name and m.user.name.lower() == name.strip().lower():
+                            notified_ids.add(m.user_id)
+                            await self.notification_repo.create(
+                                user_id=m.user_id,
+                                type="mention",
+                                title=f"{author.name if author else 'Someone'} mentioned you in \"{task.title}\"",
+                                body=data.content[:200],
+                                workspace_id=workspace_id,
+                                task_id=task_id,
+                            )
+                            break
 
         return self._to_response(comment)
 

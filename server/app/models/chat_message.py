@@ -24,9 +24,13 @@ class ChatMessage(Base):
     content: Mapped[str] = mapped_column(Text, nullable=False)
     file_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     file_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    reply_to_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("chat_messages.id", ondelete="SET NULL"), nullable=True
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
 
     workspace = relationship("Workspace", back_populates="chat_messages")
     author = relationship("User")
+    reply_to = relationship("ChatMessage", remote_side="ChatMessage.id", uselist=False)

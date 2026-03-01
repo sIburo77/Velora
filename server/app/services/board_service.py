@@ -16,6 +16,7 @@ from app.schemas.board import (
     TaskMove,
     TaskResponse,
     AnalyticsResponse,
+    MemberStatResponse,
     CalendarTaskResponse,
 )
 
@@ -167,6 +168,13 @@ class BoardService:
             raise NotFoundError("Task not found")
         await self.board_repo.delete_task(task_id)
 
+    async def reorder_tasks(
+        self, workspace_id: uuid.UUID, column_id: uuid.UUID,
+        task_ids: list[uuid.UUID], user_id: uuid.UUID,
+    ) -> None:
+        await self._check_can_edit(workspace_id, user_id)
+        await self.board_repo.batch_update_task_positions(column_id, task_ids)
+
     async def move_task(
         self, workspace_id: uuid.UUID, task_id: uuid.UUID, data: TaskMove, user_id: uuid.UUID
     ) -> TaskResponse:
@@ -253,10 +261,44 @@ class BoardService:
         for t in all_tasks:
             by_priority[t.priority] = by_priority.get(t.priority, 0) + 1
 
+        # Per-member stats
+        members = await self.workspace_repo.get_members(workspace_id)
+        member_map = {}
+        for m in members:
+            if m.user:
+                member_map[m.user_id] = {
+                    "user_id": m.user_id,
+                    "user_name": m.user.name,
+                    "avatar_url": m.user.avatar_url,
+                    "tasks_created": 0,
+                    "tasks_completed": 0,
+                }
+
+        for t in all_tasks:
+            if t.created_by and t.created_by in member_map:
+                member_map[t.created_by]["tasks_created"] += 1
+                if t.is_completed:
+                    member_map[t.created_by]["tasks_completed"] += 1
+
+        by_member = []
+        for uid, stats in member_map.items():
+            created = stats["tasks_created"]
+            compl = stats["tasks_completed"]
+            by_member.append(MemberStatResponse(
+                user_id=uid,
+                user_name=stats["user_name"],
+                avatar_url=stats["avatar_url"],
+                tasks_created=created,
+                tasks_completed=compl,
+                completion_rate=round((compl / created * 100) if created > 0 else 0.0, 1),
+            ))
+        by_member.sort(key=lambda x: x.tasks_completed, reverse=True)
+
         return AnalyticsResponse(
             total_tasks=total,
             completed_tasks=completed,
             completion_rate=round(rate, 1),
             by_column=by_column,
             by_priority=by_priority,
+            by_member=by_member,
         )

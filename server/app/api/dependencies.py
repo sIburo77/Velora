@@ -16,6 +16,7 @@ from app.repositories.comment_repo import CommentRepository
 from app.repositories.attachment_repo import AttachmentRepository
 from app.repositories.chat_repo import ChatRepository
 from app.repositories.notification_repo import NotificationRepository
+from app.repositories.tag_repo import TagRepository
 from app.services.auth_service import AuthService
 from app.services.user_service import UserService
 from app.services.workspace_service import WorkspaceService
@@ -26,6 +27,7 @@ from app.services.comment_service import CommentService
 from app.services.attachment_service import AttachmentService
 from app.services.chat_service import ChatService
 from app.services.notification_service import NotificationService
+from app.services.tag_service import TagService
 
 security = HTTPBearer()
 
@@ -142,3 +144,15 @@ def get_notification_service(
     notification_repo: NotificationRepository = Depends(get_notification_repo),
 ) -> NotificationService:
     return NotificationService(notification_repo)
+
+
+def get_tag_repo(db: AsyncSession = Depends(get_db)) -> TagRepository:
+    return TagRepository(db)
+
+
+def get_tag_service(
+    tag_repo: TagRepository = Depends(get_tag_repo),
+    workspace_repo: WorkspaceRepository = Depends(get_workspace_repo),
+    board_repo: BoardRepository = Depends(get_board_repo),
+) -> TagService:
+    return TagService(tag_repo, workspace_repo, board_repo)

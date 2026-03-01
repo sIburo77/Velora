@@ -6,7 +6,7 @@ import { useWorkspace } from '../context/WorkspaceContext';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import api from '../services/api';
-import Loader from '../components/ui/Loader';
+import { SkeletonStat, SkeletonLine } from '../components/ui/Skeleton';
 import Modal from '../components/ui/Modal';
 import TemplatePicker from '../components/workspace/TemplatePicker';
 
@@ -69,7 +69,25 @@ export default function Dashboard() {
     }
   }, [currentWorkspace]);
 
-  if (loading) return <Loader />;
+  if (loading) {
+    return (
+      <div className="max-w-6xl mx-auto">
+        <div className="mb-8 space-y-2">
+          <SkeletonLine className="h-8 w-64" />
+          <SkeletonLine className="h-4 w-48" />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+          <SkeletonStat />
+          <SkeletonStat />
+          <SkeletonStat />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="card py-6"><SkeletonLine className="h-12 w-full" /></div>
+          <div className="card py-6"><SkeletonLine className="h-12 w-full" /></div>
+        </div>
+      </div>
+    );
+  }
 
   const InvitationBanner = () => {
     if (pendingInvitations.length === 0) return null;

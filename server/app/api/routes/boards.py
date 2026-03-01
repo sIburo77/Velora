@@ -11,6 +11,7 @@ from app.schemas.board import (
     TaskCreate,
     TaskUpdate,
     TaskMove,
+    TaskReorder,
     TaskResponse,
     AnalyticsResponse,
     CalendarTaskResponse,
@@ -104,6 +105,18 @@ async def delete_task(
 ):
     await service.delete_task(workspace_id, task_id, user_id)
     return {"detail": "Task deleted"}
+
+
+@router.put("/columns/{column_id}/tasks/reorder")
+async def reorder_tasks(
+    workspace_id: uuid.UUID,
+    column_id: uuid.UUID,
+    data: TaskReorder,
+    user_id: uuid.UUID = Depends(get_current_user_id),
+    service: BoardService = Depends(get_board_service),
+):
+    await service.reorder_tasks(workspace_id, column_id, data.task_ids, user_id)
+    return {"detail": "Tasks reordered"}
 
 
 @router.put("/tasks/{task_id}/move", response_model=TaskResponse)
