@@ -13,6 +13,8 @@ class ChatMessageResponse(BaseModel):
     workspace_id: uuid.UUID
     author_id: uuid.UUID | None
     content: str
+    file_url: str | None = None
+    file_name: str | None = None
     created_at: datetime
     author_name: str | None = None
 

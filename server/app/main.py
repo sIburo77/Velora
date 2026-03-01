@@ -66,15 +66,22 @@ async def ws_chat(websocket: WebSocket, workspace_id: uuid.UUID, token: str = Qu
             while True:
                 data = await websocket.receive_json()
                 content = data.get("content", "").strip()
-                if not content:
+                file_url = data.get("file_url")
+                file_name = data.get("file_name")
+                if not content and not file_url:
                     continue
 
-                msg = await chat_repo.create(workspace_id, user_id, content)
+                msg = await chat_repo.create(
+                    workspace_id, user_id, content or "",
+                    file_url=file_url, file_name=file_name,
+                )
                 await manager.broadcast_chat(workspace_id, {
                     "id": str(msg.id),
                     "workspace_id": str(msg.workspace_id),
                     "author_id": str(msg.author_id),
                     "content": msg.content,
+                    "file_url": msg.file_url,
+                    "file_name": msg.file_name,
                     "created_at": msg.created_at.isoformat(),
                     "author_name": msg.author.name if msg.author else None,
                 })
