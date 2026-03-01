@@ -122,7 +122,17 @@ export default function Settings() {
     setTimeout(() => setCopiedToken(null), 2000);
   };
 
-  const isOwner = currentWorkspace?.role === 'owner';
+  const isAdmin = currentWorkspace?.role === 'admin';
+
+  const changeRole = async (userId, role) => {
+    try {
+      await api.updateMemberRole(currentWorkspace.id, userId, { role });
+      await fetchMembers(currentWorkspace.id);
+      success(t('settings.roleUpdated'));
+    } catch (err) {
+      error(err.message);
+    }
+  };
 
   return (
     <div className="max-w-3xl mx-auto space-y-8">
@@ -182,7 +192,7 @@ export default function Settings() {
                 + {t('settings.newWorkspace')}
               </button>
             </div>
-            {isOwner && (
+            {isAdmin && (
               <div className="space-y-3">
                 <div>
                   <label className="block text-sm text-content-secondary mb-1">{t('auth.name')}</label>
@@ -205,7 +215,7 @@ export default function Settings() {
                 </button>
               </div>
             )}
-            {!isOwner && (
+            {!isAdmin && (
               <p className="text-sm text-content-secondary">{t('settings.memberOnly')}</p>
             )}
           </div>
@@ -228,12 +238,25 @@ export default function Settings() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className={`text-xs px-2 py-0.5 rounded-full ${
-                      m.role === 'owner' ? 'bg-violet-500/20 text-violet-400' : 'bg-surface-glass text-content-secondary'
-                    }`}>
-                      {m.role}
-                    </span>
-                    {isOwner && m.role !== 'owner' && (
+                    {isAdmin && m.role !== 'admin' ? (
+                      <select
+                        value={m.role}
+                        onChange={(e) => changeRole(m.user_id, e.target.value)}
+                        className="text-xs rounded-lg bg-surface-glass border border-[var(--color-border)] px-2 py-1"
+                      >
+                        <option value="viewer">{t('settings.viewer')}</option>
+                        <option value="member">{t('settings.member')}</option>
+                        <option value="editor">{t('settings.editor')}</option>
+                        <option value="admin">{t('settings.admin')}</option>
+                      </select>
+                    ) : (
+                      <span className={`text-xs px-2 py-0.5 rounded-full ${
+                        m.role === 'admin' ? 'bg-violet-500/20 text-violet-400' : 'bg-surface-glass text-content-secondary'
+                      }`}>
+                        {m.role}
+                      </span>
+                    )}
+                    {isAdmin && m.role !== 'admin' && (
                       <button
                         onClick={() => removeMember(currentWorkspace.id, m.user_id)}
                         className="p-1 rounded-lg hover:bg-red-500/10 text-content-secondary hover:text-red-400 transition"
@@ -247,7 +270,7 @@ export default function Settings() {
             </div>
 
             {/* Invite */}
-            {isOwner && (
+            {isAdmin && (
               <>
                 <h3 className="text-sm font-medium text-content-secondary mb-2">{t('settings.inviteByEmail')}</h3>
                 <form onSubmit={sendInvitation} className="flex gap-2 mb-4">

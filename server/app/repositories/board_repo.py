@@ -109,6 +109,23 @@ class BoardRepository:
         )
         return result.scalars().all()
 
+    async def get_tasks_by_deadline_range(
+        self, board_id: uuid.UUID, start: "datetime", end: "datetime"
+    ) -> list[Task]:
+        from datetime import datetime
+        result = await self.db.execute(
+            select(Task)
+            .join(Column, Column.id == Task.column_id)
+            .where(
+                Column.board_id == board_id,
+                Task.deadline.isnot(None),
+                Task.deadline >= start,
+                Task.deadline <= end,
+            )
+            .order_by(Task.deadline)
+        )
+        return result.scalars().all()
+
     async def search_tasks(
         self,
         board_id: uuid.UUID,

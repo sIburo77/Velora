@@ -12,12 +12,20 @@ from app.repositories.workspace_repo import WorkspaceRepository
 from app.repositories.invitation_repo import InvitationRepository
 from app.repositories.board_repo import BoardRepository
 from app.repositories.verification_repo import VerificationRepository
+from app.repositories.comment_repo import CommentRepository
+from app.repositories.attachment_repo import AttachmentRepository
+from app.repositories.chat_repo import ChatRepository
+from app.repositories.notification_repo import NotificationRepository
 from app.services.auth_service import AuthService
 from app.services.user_service import UserService
 from app.services.workspace_service import WorkspaceService
 from app.services.invitation_service import InvitationService
 from app.services.board_service import BoardService
 from app.services.email_service import EmailService
+from app.services.comment_service import CommentService
+from app.services.attachment_service import AttachmentService
+from app.services.chat_service import ChatService
+from app.services.notification_service import NotificationService
 
 security = HTTPBearer()
 
@@ -55,6 +63,22 @@ def get_verification_repo(db: AsyncSession = Depends(get_db)) -> VerificationRep
     return VerificationRepository(db)
 
 
+def get_comment_repo(db: AsyncSession = Depends(get_db)) -> CommentRepository:
+    return CommentRepository(db)
+
+
+def get_attachment_repo(db: AsyncSession = Depends(get_db)) -> AttachmentRepository:
+    return AttachmentRepository(db)
+
+
+def get_chat_repo(db: AsyncSession = Depends(get_db)) -> ChatRepository:
+    return ChatRepository(db)
+
+
+def get_notification_repo(db: AsyncSession = Depends(get_db)) -> NotificationRepository:
+    return NotificationRepository(db)
+
+
 # Services
 def get_auth_service(
     user_repo: UserRepository = Depends(get_user_repo),
@@ -87,3 +111,34 @@ def get_board_service(
     workspace_repo: WorkspaceRepository = Depends(get_workspace_repo),
 ) -> BoardService:
     return BoardService(board_repo, workspace_repo)
+
+
+def get_comment_service(
+    comment_repo: CommentRepository = Depends(get_comment_repo),
+    board_repo: BoardRepository = Depends(get_board_repo),
+    workspace_repo: WorkspaceRepository = Depends(get_workspace_repo),
+    notification_repo: NotificationRepository = Depends(get_notification_repo),
+    user_repo: UserRepository = Depends(get_user_repo),
+) -> CommentService:
+    return CommentService(comment_repo, board_repo, workspace_repo, notification_repo, user_repo)
+
+
+def get_attachment_service(
+    attachment_repo: AttachmentRepository = Depends(get_attachment_repo),
+    board_repo: BoardRepository = Depends(get_board_repo),
+    workspace_repo: WorkspaceRepository = Depends(get_workspace_repo),
+) -> AttachmentService:
+    return AttachmentService(attachment_repo, board_repo, workspace_repo)
+
+
+def get_chat_service(
+    chat_repo: ChatRepository = Depends(get_chat_repo),
+    workspace_repo: WorkspaceRepository = Depends(get_workspace_repo),
+) -> ChatService:
+    return ChatService(chat_repo, workspace_repo)
+
+
+def get_notification_service(
+    notification_repo: NotificationRepository = Depends(get_notification_repo),
+) -> NotificationService:
+    return NotificationService(notification_repo)

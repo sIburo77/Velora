@@ -20,3 +20,4 @@ class Workspace(Base):
     members = relationship("WorkspaceMember", back_populates="workspace", cascade="all, delete-orphan")
     boards = relationship("Board", back_populates="workspace", cascade="all, delete-orphan")
     invitations = relationship("Invitation", back_populates="workspace", cascade="all, delete-orphan")
+    chat_messages = relationship("ChatMessage", back_populates="workspace", cascade="all, delete-orphan")

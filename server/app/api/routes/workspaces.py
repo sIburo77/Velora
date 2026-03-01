@@ -8,6 +8,7 @@ from app.schemas.workspace import (
     WorkspaceUpdate,
     WorkspaceResponse,
     WorkspaceMemberResponse,
+    RoleUpdate,
 )
 from app.services.workspace_service import WorkspaceService
 
@@ -58,6 +59,17 @@ async def list_members(
     service: WorkspaceService = Depends(get_workspace_service),
 ):
     return await service.get_members(workspace_id, user_id)
+
+
+@router.patch("/{workspace_id}/members/{member_user_id}/role", response_model=WorkspaceMemberResponse)
+async def update_member_role(
+    workspace_id: uuid.UUID,
+    member_user_id: uuid.UUID,
+    data: RoleUpdate,
+    user_id: uuid.UUID = Depends(get_current_user_id),
+    service: WorkspaceService = Depends(get_workspace_service),
+):
+    return await service.update_member_role(workspace_id, member_user_id, data, user_id)
 
 
 @router.delete("/{workspace_id}/members/{member_user_id}")

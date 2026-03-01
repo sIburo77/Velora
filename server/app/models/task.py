@@ -37,3 +37,5 @@ class Task(Base):
     )
 
     column = relationship("Column", back_populates="tasks")
+    comments = relationship("TaskComment", back_populates="task", cascade="all, delete-orphan")
+    attachments = relationship("TaskAttachment", back_populates="task", cascade="all, delete-orphan")

@@ -9,6 +9,8 @@ import { useToast } from '../context/ToastContext';
 import api from '../services/api';
 import Loader from '../components/ui/Loader';
 import Modal from '../components/ui/Modal';
+import CommentSection from '../components/tasks/CommentSection';
+import AttachmentList from '../components/tasks/AttachmentList';
 
 const priorityColors = {
   high: 'bg-red-500/20 text-red-400 border-red-500/30',
@@ -437,6 +439,7 @@ export default function Board() {
         isOpen={taskModal.open}
         onClose={() => setTaskModal({ open: false, columnId: null, task: null })}
         title={taskModal.task ? t('board.editTask') : t('board.newTask')}
+        size={taskModal.task ? 'lg' : 'md'}
       >
         <form onSubmit={saveTask} className="space-y-4">
           <div>
@@ -486,6 +489,21 @@ export default function Board() {
             {taskModal.task ? t('board.saveChanges') : t('board.createTask')}
           </button>
         </form>
+
+        {/* Attachments & Comments for existing tasks */}
+        {taskModal.task && currentWorkspace && (
+          <>
+            <AttachmentList
+              workspaceId={currentWorkspace.id}
+              taskId={taskModal.task.id}
+              canEdit={true}
+            />
+            <CommentSection
+              workspaceId={currentWorkspace.id}
+              taskId={taskModal.task.id}
+            />
+          </>
+        )}
       </Modal>
     </div>
   );

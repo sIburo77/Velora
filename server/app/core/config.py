@@ -21,6 +21,10 @@ class Settings(BaseSettings):
     # Verification
     VERIFICATION_CODE_EXPIRE_MINUTES: int = 10
 
+    # File uploads
+    UPLOAD_DIR: str = "uploads"
+    MAX_FILE_SIZE_MB: int = 10
+
     @property
     def cors_origins_list(self) -> list[str]:
         return [origin.strip() for origin in self.CORS_ORIGINS.split(",")]

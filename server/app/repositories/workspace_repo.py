@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import select, delete
+from sqlalchemy import select, delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -61,6 +61,14 @@ class WorkspaceRepository:
             .where(WorkspaceMember.workspace_id == workspace_id)
         )
         return result.scalars().all()
+
+    async def update_member_role(self, workspace_id: uuid.UUID, user_id: uuid.UUID, role: str) -> None:
+        await self.db.execute(
+            update(WorkspaceMember)
+            .where(WorkspaceMember.workspace_id == workspace_id, WorkspaceMember.user_id == user_id)
+            .values(role=role)
+        )
+        await self.db.flush()
 
     async def remove_member(self, workspace_id: uuid.UUID, user_id: uuid.UUID) -> None:
         await self.db.execute(

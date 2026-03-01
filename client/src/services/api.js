@@ -71,6 +71,7 @@ class ApiService {
   deleteWorkspace(id) { return this.delete(`/workspaces/${id}`); }
   getMembers(wsId) { return this.get(`/workspaces/${wsId}/members`); }
   removeMember(wsId, userId) { return this.delete(`/workspaces/${wsId}/members/${userId}`); }
+  updateMemberRole(wsId, userId, data) { return this.patch(`/workspaces/${wsId}/members/${userId}/role`, data); }
 
   // Invitations
   createInvitation(wsId, data) { return this.post(`/invitations/workspace/${wsId}`, data); }
@@ -101,6 +102,43 @@ class ApiService {
 
   // Analytics
   getAnalytics(wsId) { return this.get(`/workspaces/${wsId}/board/analytics`); }
+
+  // Calendar
+  getCalendarTasks(wsId, year, month) {
+    return this.get(`/workspaces/${wsId}/board/tasks/calendar?year=${year}&month=${month}`);
+  }
+
+  // Comments
+  getComments(wsId, taskId) { return this.get(`/workspaces/${wsId}/board/tasks/${taskId}/comments`); }
+  createComment(wsId, taskId, data) { return this.post(`/workspaces/${wsId}/board/tasks/${taskId}/comments`, data); }
+  deleteComment(wsId, taskId, commentId) { return this.delete(`/workspaces/${wsId}/board/tasks/${taskId}/comments/${commentId}`); }
+
+  // Attachments
+  getAttachments(wsId, taskId) { return this.get(`/workspaces/${wsId}/board/tasks/${taskId}/attachments`); }
+  async uploadAttachment(wsId, taskId, file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    const headers = {};
+    if (this.token) headers['Authorization'] = `Bearer ${this.token}`;
+    const response = await fetch(`${API_BASE}/workspaces/${wsId}/board/tasks/${taskId}/attachments`, {
+      method: 'POST', body: formData, headers,
+    });
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ detail: 'Upload failed' }));
+      throw new Error(error.detail || `HTTP ${response.status}`);
+    }
+    return response.json();
+  }
+  deleteAttachment(wsId, taskId, attachmentId) { return this.delete(`/workspaces/${wsId}/board/tasks/${taskId}/attachments/${attachmentId}`); }
+
+  // Chat
+  getChatHistory(wsId, limit = 50, offset = 0) { return this.get(`/workspaces/${wsId}/chat/history?limit=${limit}&offset=${offset}`); }
+
+  // Notifications
+  getNotifications(limit = 50) { return this.get(`/notifications?limit=${limit}`); }
+  getUnreadCount() { return this.get('/notifications/unread-count'); }
+  markNotificationRead(id) { return this.patch(`/notifications/${id}/read`); }
+  markAllNotificationsRead() { return this.post('/notifications/read-all'); }
 }
 
 export const api = new ApiService();
