@@ -17,7 +17,7 @@ export default function Toast() {
   const { toasts } = useToast();
 
   return (
-    <div className="fixed top-4 right-4 z-50 flex flex-col gap-2">
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-col-reverse gap-2 items-center">
       {toasts.map((toast) => {
         const Icon = icons[toast.type];
         return (
@@ -33,8 +33,8 @@ export default function Toast() {
 
       <style>{`
         @keyframes slide-in {
-          from { transform: translateX(100%); opacity: 0; }
-          to { transform: translateX(0); opacity: 1; }
+          from { transform: translateY(20px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
         }
         .animate-slide-in { animation: slide-in 0.3s ease-out; }
       `}</style>
