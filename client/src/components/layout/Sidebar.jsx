@@ -48,6 +48,16 @@ export default function Sidebar({ open, onClose }) {
   const [themeAnimating, setThemeAnimating] = useState(false);
   const navRef = useRef(null);
   const [indicatorStyle, setIndicatorStyle] = useState({});
+  const wsListRef = useRef(null);
+  const [wsHeight, setWsHeight] = useState(0);
+
+  useEffect(() => {
+    if (showWs && wsListRef.current) {
+      setWsHeight(wsListRef.current.scrollHeight);
+    } else {
+      setWsHeight(0);
+    }
+  }, [showWs, workspaces]);
 
   useLayoutEffect(() => {
     if (!navRef.current) return;
@@ -151,27 +161,33 @@ export default function Sidebar({ open, onClose }) {
             <ChevronDown size={16} className={`transition text-content-muted ${showWs ? 'rotate-180' : ''}`} />
           </button>
 
-          {showWs && (
-            <div className="mt-1 rounded-xl glass border border-[var(--color-border-hover)] overflow-hidden">
-              {workspaces.map((ws) => (
-                <button
-                  key={ws.id}
-                  onClick={() => { selectWorkspace(ws); setShowWs(false); }}
-                  className={`w-full text-left px-3 py-2 text-sm hover:bg-surface-glass transition ${
-                    ws.id === currentWorkspace?.id ? 'text-violet-400' : 'text-content-secondary'
-                  }`}
-                >
-                  {ws.name}
-                </button>
-              ))}
+          <div
+            ref={wsListRef}
+            className="mt-1 rounded-xl glass border border-[var(--color-border-hover)] transition-all duration-300 ease-in-out"
+            style={{
+              maxHeight: wsHeight,
+              opacity: showWs ? 1 : 0,
+              overflow: 'hidden',
+            }}
+          >
+            {workspaces.map((ws) => (
               <button
-                onClick={() => { setShowCreate(true); setShowWs(false); }}
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-violet-400 hover:bg-surface-glass transition border-t border-[var(--color-border)]"
+                key={ws.id}
+                onClick={() => { selectWorkspace(ws); setShowWs(false); }}
+                className={`w-full text-left px-3 py-2 text-sm hover:bg-surface-glass transition ${
+                  ws.id === currentWorkspace?.id ? 'text-violet-400' : 'text-content-secondary'
+                }`}
               >
-                <Plus size={14} /> {t('sidebar.newWorkspace')}
+                {ws.name}
               </button>
-            </div>
-          )}
+            ))}
+            <button
+              onClick={() => { setShowCreate(true); setShowWs(false); }}
+              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-violet-400 hover:bg-surface-glass transition border-t border-[var(--color-border)]"
+            >
+              <Plus size={14} /> {t('sidebar.newWorkspace')}
+            </button>
+          </div>
         </div>
 
         {/* Navigation */}

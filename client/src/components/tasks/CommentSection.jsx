@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { Send, Trash2 } from 'lucide-react';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
+import Markdown from '../ui/Markdown';
+import MentionInput from '../ui/MentionInput';
 
 export default function CommentSection({ workspaceId, taskId }) {
   const { t } = useTranslation();
@@ -10,11 +12,17 @@ export default function CommentSection({ workspaceId, taskId }) {
   const [comments, setComments] = useState([]);
   const [text, setText] = useState('');
   const [loading, setLoading] = useState(false);
+  const [members, setMembers] = useState([]);
 
   useEffect(() => {
     if (!taskId) return;
     api.getComments(workspaceId, taskId).then(setComments).catch(() => {});
   }, [workspaceId, taskId]);
+
+  useEffect(() => {
+    if (!workspaceId) return;
+    api.getMembers(workspaceId).then(setMembers).catch(() => {});
+  }, [workspaceId]);
 
   const send = async (e) => {
     e.preventDefault();
@@ -57,17 +65,19 @@ export default function CommentSection({ workspaceId, taskId }) {
                   </button>
                 )}
               </div>
-              <p className="text-sm text-content-secondary mt-0.5 break-words">{c.content}</p>
+              <div className="text-content-secondary mt-0.5"><Markdown content={c.content} /></div>
             </div>
           </div>
         ))}
       </div>
       <form onSubmit={send} className="flex gap-2">
-        <input
+        <MentionInput
           className="input-field flex-1 text-sm"
           placeholder={t('comments.placeholder')}
           value={text}
-          onChange={(e) => setText(e.target.value)}
+          onChange={setText}
+          onSubmit={send}
+          members={members}
         />
         <button type="submit" disabled={loading} className="btn-primary py-2 px-3">
           <Send size={16} />

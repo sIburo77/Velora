@@ -180,6 +180,14 @@ class ApiService {
     return response.json();
   }
 
+  // Tags
+  getTags(wsId) { return this.get(`/workspaces/${wsId}/tags`); }
+  createTag(wsId, data) { return this.post(`/workspaces/${wsId}/tags`, data); }
+  deleteTag(wsId, tagId) { return this.delete(`/workspaces/${wsId}/tags/${tagId}`); }
+  addTagToTask(wsId, taskId, tagId) { return this.post(`/workspaces/${wsId}/board/tasks/${taskId}/tags/${tagId}`); }
+  removeTagFromTask(wsId, taskId, tagId) { return this.delete(`/workspaces/${wsId}/board/tasks/${taskId}/tags/${tagId}`); }
+  reorderTasks(wsId, colId, taskIds) { return this.put(`/workspaces/${wsId}/board/columns/${colId}/tasks/reorder`, { task_ids: taskIds }); }
+
   // Notifications
   getNotifications(limit = 50) { return this.get(`/notifications?limit=${limit}`); }
   getUnreadCount() { return this.get('/notifications/unread-count'); }

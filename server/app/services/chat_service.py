@@ -27,6 +27,9 @@ class ChatService:
             created_at=msg.created_at,
             author_name=msg.author.name if msg.author else None,
             author_avatar=msg.author.avatar_url if msg.author else None,
+            reply_to_id=msg.reply_to_id,
+            reply_to_content=msg.reply_to.content if msg.reply_to else None,
+            reply_to_author_name=msg.reply_to.author.name if msg.reply_to and msg.reply_to.author else None,
         )
 
     async def get_history(

@@ -22,7 +22,11 @@ class BoardRepository:
     async def get_full_board(self, board_id: uuid.UUID) -> Board | None:
         result = await self.db.execute(
             select(Board)
-            .options(selectinload(Board.columns).selectinload(Column.tasks))
+            .options(
+                selectinload(Board.columns)
+                .selectinload(Column.tasks)
+                .selectinload(Task.tags)
+            )
             .where(Board.id == board_id)
         )
         return result.scalar_one_or_none()
@@ -100,6 +104,14 @@ class BoardRepository:
             select(func.coalesce(func.max(Task.position), -1)).where(Task.column_id == column_id)
         )
         return result.scalar()
+
+    async def batch_update_task_positions(self, column_id: uuid.UUID, task_ids: list[uuid.UUID]) -> None:
+        from sqlalchemy import update
+        for i, task_id in enumerate(task_ids):
+            await self.db.execute(
+                update(Task).where(Task.id == task_id).values(column_id=column_id, position=i)
+            )
+        await self.db.flush()
 
     async def get_all_tasks_for_board(self, board_id: uuid.UUID) -> list[Task]:
         result = await self.db.execute(
