@@ -27,6 +27,18 @@ class ChatRepository:
         )
         return list(reversed(result.scalars().all()))
 
+    async def get_by_id(self, message_id: uuid.UUID) -> ChatMessage | None:
+        result = await self.db.execute(
+            select(ChatMessage).where(ChatMessage.id == message_id)
+        )
+        return result.scalar_one_or_none()
+
+    async def delete(self, message_id: uuid.UUID) -> None:
+        msg = await self.get_by_id(message_id)
+        if msg:
+            await self.db.delete(msg)
+            await self.db.flush()
+
     async def create(
         self, workspace_id: uuid.UUID, author_id: uuid.UUID, content: str,
         file_url: str | None = None, file_name: str | None = None,

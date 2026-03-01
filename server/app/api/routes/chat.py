@@ -23,6 +23,17 @@ async def get_chat_history(
     return await service.get_history(workspace_id, user_id, limit, offset)
 
 
+@router.delete("/{message_id}")
+async def delete_chat_message(
+    workspace_id: _uuid.UUID,
+    message_id: _uuid.UUID,
+    user_id: _uuid.UUID = Depends(get_current_user_id),
+    service: ChatService = Depends(get_chat_service),
+):
+    await service.delete_message(workspace_id, message_id, user_id)
+    return {"ok": True}
+
+
 @router.post("/upload")
 async def upload_chat_file(
     workspace_id: _uuid.UUID,
