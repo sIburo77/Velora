@@ -1,4 +1,6 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
+
+const getName = (m) => m.user_name || m.name || '';
 
 export default function MentionInput({
   value, onChange, onSubmit, placeholder, members = [], className = '', autoFocus = false, disabled = false,
@@ -9,7 +11,7 @@ export default function MentionInput({
   const inputRef = useRef(null);
 
   const filteredMembers = members.filter((m) =>
-    m.name?.toLowerCase().includes(mentionQuery.toLowerCase())
+    getName(m).toLowerCase().includes(mentionQuery.toLowerCase())
   );
 
   const handleChange = (e) => {
@@ -33,9 +35,10 @@ export default function MentionInput({
   };
 
   const selectMember = (member) => {
+    const name = getName(member);
     const before = value.slice(0, mentionStart);
     const after = value.slice(mentionStart + mentionQuery.length + 1);
-    const newVal = `${before}@${member.name} ${after}`;
+    const newVal = `${before}@${name} ${after}`;
     onChange(newVal);
     setShowDropdown(false);
     inputRef.current?.focus();
@@ -50,6 +53,8 @@ export default function MentionInput({
     }
   };
 
+  const visible = showDropdown && filteredMembers.length > 0;
+
   return (
     <div className="relative flex-1">
       <input
@@ -62,24 +67,30 @@ export default function MentionInput({
         autoFocus={autoFocus}
         disabled={disabled}
       />
-      {showDropdown && filteredMembers.length > 0 && (
-        <div className="absolute bottom-full mb-1 left-0 w-full glass rounded-xl border border-[var(--color-border)] p-1 max-h-32 overflow-y-auto z-30">
-          {filteredMembers.map((m) => (
-            <button
-              key={m.user_id}
-              type="button"
-              onClick={() => selectMember(m)}
-              className="w-full text-left text-sm px-3 py-1.5 rounded-lg hover:bg-surface-glass flex items-center gap-2"
-            >
+      <div
+        className={`absolute bottom-full mb-1 left-0 w-full glass rounded-xl border border-[var(--color-border)] p-1 max-h-40 overflow-y-auto z-30 transition-all duration-200 origin-bottom ${
+          visible ? 'opacity-100 scale-100 pointer-events-auto' : 'opacity-0 scale-95 pointer-events-none'
+        }`}
+      >
+        {filteredMembers.map((m) => (
+          <button
+            key={m.user_id}
+            type="button"
+            onClick={() => selectMember(m)}
+            className="w-full text-left text-sm px-3 py-1.5 rounded-lg hover:bg-surface-glass flex items-center gap-2"
+          >
+            {m.avatar_url ? (
+              <img src={m.avatar_url} alt="" className="w-6 h-6 rounded-full object-cover shrink-0" />
+            ) : (
               <div className="w-6 h-6 rounded-full bg-gradient-to-br from-violet-500 to-blue-500 flex items-center justify-center text-[10px] font-bold text-white shrink-0">
-                {m.name?.[0]?.toUpperCase() || '?'}
+                {getName(m)?.[0]?.toUpperCase() || '?'}
               </div>
-              <span>{m.name}</span>
-              <span className="text-xs text-content-muted ml-auto">{m.role}</span>
-            </button>
-          ))}
-        </div>
-      )}
+            )}
+            <span>{getName(m)}</span>
+            <span className="text-xs text-content-muted ml-auto">{m.role}</span>
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

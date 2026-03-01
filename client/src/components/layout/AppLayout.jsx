@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Menu } from 'lucide-react';
 import Sidebar from './Sidebar';
-import NotificationBell from '../notifications/NotificationBell';
 
 export default function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -20,7 +19,6 @@ export default function AppLayout() {
           </button>
           <h1 className="ml-3 text-lg font-bold glow-text">Velora</h1>
         </div>
-        <NotificationBell />
       </div>
 
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />

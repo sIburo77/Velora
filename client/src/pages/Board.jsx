@@ -26,7 +26,8 @@ const priorityColors = {
 
 const priorityDots = { high: 'bg-red-500', medium: 'bg-amber-500', low: 'bg-emerald-500' };
 
-function TaskCard({ task, colId, onToggle, onEdit, onDelete, overlay = false }) {
+function TaskCard({ task, colId, onToggle, onEdit, onDelete, overlay = false, members = [] }) {
+  const assignee = task.assigned_to ? members.find((m) => m.user_id === task.assigned_to) : null;
   return (
     <div className={`rounded-xl p-3 bg-surface-elevated border border-[var(--color-border)] ${overlay ? 'shadow-2xl shadow-violet-500/20 rotate-2 scale-105' : 'hover:border-[var(--color-border-hover)]'} transition group`}>
       <div className="flex items-start justify-between gap-2 mb-2">
@@ -79,12 +80,24 @@ function TaskCard({ task, colId, onToggle, onEdit, onDelete, overlay = false }) 
             {new Date(task.deadline).toLocaleDateString()}
           </span>
         )}
+        {assignee && (
+          <span className="text-xs text-content-muted flex items-center gap-1 ml-auto">
+            {assignee.avatar_url ? (
+              <img src={assignee.avatar_url} alt="" className="w-4 h-4 rounded-full object-cover" />
+            ) : (
+              <div className="w-4 h-4 rounded-full bg-gradient-to-br from-violet-500 to-blue-500 flex items-center justify-center text-[8px] font-bold text-white">
+                {(assignee.user_name || '?')[0].toUpperCase()}
+              </div>
+            )}
+            {assignee.user_name}
+          </span>
+        )}
       </div>
     </div>
   );
 }
 
-function SortableTaskCard({ task, colId, onToggle, onEdit, onDelete }) {
+function SortableTaskCard({ task, colId, onToggle, onEdit, onDelete, members }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: task.id,
     data: { type: 'task', task, colId },
@@ -97,7 +110,7 @@ function SortableTaskCard({ task, colId, onToggle, onEdit, onDelete }) {
 
   return (
     <div ref={setNodeRef} style={style} {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing">
-      <TaskCard task={task} colId={colId} onToggle={onToggle} onEdit={onEdit} onDelete={onDelete} />
+      <TaskCard task={task} colId={colId} onToggle={onToggle} onEdit={onEdit} onDelete={onDelete} members={members} />
     </div>
   );
 }
@@ -111,12 +124,15 @@ export default function Board() {
   const [showAddCol, setShowAddCol] = useState(false);
   const [newColName, setNewColName] = useState('');
   const [taskModal, setTaskModal] = useState({ open: false, columnId: null, task: null });
-  const [taskForm, setTaskForm] = useState({ title: '', description: '', priority: 'medium', deadline: '' });
+  const [taskForm, setTaskForm] = useState({ title: '', description: '', priority: 'medium', deadline: '', assigned_to: '' });
+  const [members, setMembers] = useState([]);
   const [editingCol, setEditingCol] = useState(null);
   const [editColName, setEditColName] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterPriority, setFilterPriority] = useState('');
   const [filterCompleted, setFilterCompleted] = useState('');
+  const [filterDateFrom, setFilterDateFrom] = useState('');
+  const [filterDateTo, setFilterDateTo] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [searchResults, setSearchResults] = useState(null);
   const [activeTask, setActiveTask] = useState(null);
@@ -153,6 +169,7 @@ export default function Board() {
   useEffect(() => {
     if (!currentWorkspace) return;
     api.getTags(currentWorkspace.id).then(setWorkspaceTags).catch(() => {});
+    api.getMembers(currentWorkspace.id).then(setMembers).catch(() => {});
   }, [currentWorkspace]);
 
   const tagColors = ['#8b5cf6', '#ef4444', '#f59e0b', '#10b981', '#3b82f6', '#ec4899', '#06b6d4', '#f97316'];
@@ -231,9 +248,10 @@ export default function Board() {
         description: task.description || '',
         priority: task.priority,
         deadline: task.deadline ? task.deadline.slice(0, 16) : '',
+        assigned_to: task.assigned_to || '',
       });
     } else {
-      setTaskForm({ title: '', description: '', priority: 'medium', deadline: '' });
+      setTaskForm({ title: '', description: '', priority: 'medium', deadline: '', assigned_to: '' });
     }
     setTaskModal({ open: true, columnId, task });
   };
@@ -244,6 +262,7 @@ export default function Board() {
     const data = {
       ...taskForm,
       deadline: taskForm.deadline ? new Date(taskForm.deadline).toISOString() : null,
+      assigned_to: taskForm.assigned_to || null,
     };
     try {
       if (taskModal.task) {
@@ -287,7 +306,7 @@ export default function Board() {
   };
 
   const handleSearch = async () => {
-    if (!searchQuery && !filterPriority && filterCompleted === '') {
+    if (!searchQuery && !filterPriority && filterCompleted === '' && !filterDateFrom && !filterDateTo) {
       setSearchResults(null);
       return;
     }
@@ -296,6 +315,8 @@ export default function Board() {
       if (searchQuery) params.q = searchQuery;
       if (filterPriority) params.priority = filterPriority;
       if (filterCompleted !== '') params.is_completed = filterCompleted;
+      if (filterDateFrom) params.deadline_from = new Date(filterDateFrom).toISOString();
+      if (filterDateTo) params.deadline_to = new Date(filterDateTo + 'T23:59:59').toISOString();
       const results = await api.searchTasks(currentWorkspace.id, params);
       setSearchResults(results);
     } catch (err) {
@@ -307,6 +328,8 @@ export default function Board() {
     setSearchQuery('');
     setFilterPriority('');
     setFilterCompleted('');
+    setFilterDateFrom('');
+    setFilterDateTo('');
     setSearchResults(null);
   };
 
@@ -484,6 +507,20 @@ export default function Board() {
             <option value="true">{t('board.completedFilter')}</option>
             <option value="false">{t('board.activeFilter')}</option>
           </select>
+          <input
+            type="date"
+            className="input-field py-2 text-sm w-40"
+            value={filterDateFrom}
+            onChange={(e) => setFilterDateFrom(e.target.value)}
+            placeholder={t('board.dateFrom')}
+          />
+          <input
+            type="date"
+            className="input-field py-2 text-sm w-40"
+            value={filterDateTo}
+            onChange={(e) => setFilterDateTo(e.target.value)}
+            placeholder={t('board.dateTo')}
+          />
           <button onClick={handleSearch} className="btn-primary py-2 text-sm">{t('common.apply')}</button>
           {searchResults && (
             <button onClick={clearFilters} className="btn-secondary py-2 text-sm flex items-center gap-1">
@@ -578,6 +615,7 @@ export default function Board() {
                         onToggle={toggleComplete}
                         onEdit={openTaskModal}
                         onDelete={deleteTask}
+                        members={members}
                       />
                     ))}
                   </div>
@@ -626,7 +664,7 @@ export default function Board() {
         <DragOverlay>
           {activeTask && (
             <div className="w-68">
-              <TaskCard task={activeTask} overlay />
+              <TaskCard task={activeTask} overlay members={members} />
             </div>
           )}
         </DragOverlay>
@@ -682,6 +720,21 @@ export default function Board() {
                 onChange={(e) => setTaskForm({ ...taskForm, deadline: e.target.value })}
               />
             </div>
+          </div>
+          <div>
+            <label className="block text-sm text-content-secondary mb-1">{t('board.assignee')}</label>
+            <select
+              className="input-field"
+              value={taskForm.assigned_to}
+              onChange={(e) => setTaskForm({ ...taskForm, assigned_to: e.target.value })}
+            >
+              <option value="">{t('board.unassigned')}</option>
+              {members.map((m) => (
+                <option key={m.user_id} value={m.user_id}>
+                  {m.user_name || m.user_email}
+                </option>
+              ))}
+            </select>
           </div>
           <button type="submit" className="btn-primary w-full">
             {taskModal.task ? t('board.saveChanges') : t('board.createTask')}

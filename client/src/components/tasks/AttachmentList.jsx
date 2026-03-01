@@ -63,7 +63,7 @@ export default function AttachmentList({ workspaceId, taskId, canEdit }) {
   };
 
   return (
-    <DropZone onFileDrop={uploadFile} className="mt-3">
+    <DropZone onFileDrop={uploadFile} className="mt-3" compact>
       <div className="flex items-center justify-between mb-2">
         <h4 className="text-sm font-medium flex items-center gap-1">
           <Paperclip size={14} /> {t('attachments.title')}

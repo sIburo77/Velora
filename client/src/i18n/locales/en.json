@@ -142,7 +142,12 @@
     "createTag": "Create",
     "tagName": "Tag name",
     "noTags": "No tags",
-    "noMoreTags": "No more tags to add"
+    "noMoreTags": "No more tags to add",
+    "dateFrom": "From",
+    "dateTo": "To",
+    "assignee": "Assignee",
+    "unassigned": "Unassigned",
+    "taskAssigned": "Task assigned"
   },
   "analytics": {
     "title": "Analytics",
@@ -272,6 +277,12 @@
     "scrum": "Scrum",
     "marketing": "Marketing",
     "personal": "Personal"
+  },
+  "members": {
+    "title": "Team Members",
+    "joined": "Joined",
+    "backToList": "Back to list",
+    "empty": "No members"
   },
   "roles": {
     "viewer": "Viewer",

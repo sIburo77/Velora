@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 
 from fastapi import APIRouter, Depends, Query
 
@@ -140,10 +141,13 @@ async def search_tasks(
     priority: str | None = Query(None),
     is_completed: bool | None = Query(None),
     has_deadline: bool | None = Query(None),
+    deadline_from: datetime | None = Query(None),
+    deadline_to: datetime | None = Query(None),
 ):
     return await service.search_tasks(
         workspace_id, user_id, query=q, priority=priority,
         is_completed=is_completed, has_deadline=has_deadline,
+        deadline_from=deadline_from, deadline_to=deadline_to,
     )
 
 
