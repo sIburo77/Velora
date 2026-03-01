@@ -52,7 +52,7 @@ export default function NotificationPanel({ onClose }) {
                       <p className="text-xs text-content-muted mt-0.5 line-clamp-1">{n.body}</p>
                     )}
                     <p className="text-xs text-content-muted mt-1">
-                      {new Date(n.created_at).toLocaleString()}
+                      {new Date(n.created_at).toLocaleString([], { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                     </p>
                   </div>
                   {!n.is_read && (

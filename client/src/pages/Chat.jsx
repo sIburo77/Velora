@@ -142,7 +142,7 @@ export default function Chat() {
                 <div className={`flex items-center gap-2 ${own ? 'justify-end' : ''}`}>
                   <span className="text-sm font-medium">{msg.author_name || 'Unknown'}</span>
                   <span className="text-xs text-content-muted">
-                    {new Date(msg.created_at).toLocaleTimeString()}
+                    {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </div>
                 <div className={`mt-1 inline-block rounded-2xl px-4 py-2 ${
@@ -150,11 +150,9 @@ export default function Chat() {
                     ? 'bg-violet-500/20 border border-violet-500/30 rounded-tr-md'
                     : 'bg-surface-elevated border border-[var(--color-border)] rounded-tl-md'
                 }`}>
-                  {msg.content && (
-                    <p className="text-sm break-words whitespace-pre-wrap">{msg.content}</p>
-                  )}
                   {msg.file_url && (
-                    <div className="mt-1">
+                    <div className={msg.content ? 'mb-1' : ''}>
+
                       {isImageFile(msg.file_name) ? (
                         <img
                           src={msg.file_url}
@@ -173,6 +171,9 @@ export default function Chat() {
                         </button>
                       )}
                     </div>
+                  )}
+                  {msg.content && (
+                    <p className="text-sm break-words whitespace-pre-wrap">{msg.content}</p>
                   )}
                 </div>
               </div>
