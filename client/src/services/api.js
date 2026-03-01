@@ -133,6 +133,20 @@ class ApiService {
 
   // Chat
   getChatHistory(wsId, limit = 50, offset = 0) { return this.get(`/workspaces/${wsId}/chat/history?limit=${limit}&offset=${offset}`); }
+  async uploadChatFile(wsId, file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    const headers = {};
+    if (this.token) headers['Authorization'] = `Bearer ${this.token}`;
+    const response = await fetch(`${API_BASE}/workspaces/${wsId}/chat/upload`, {
+      method: 'POST', body: formData, headers,
+    });
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ detail: 'Upload failed' }));
+      throw new Error(error.detail || `HTTP ${response.status}`);
+    }
+    return response.json();
+  }
 
   // Notifications
   getNotifications(limit = 50) { return this.get(`/notifications?limit=${limit}`); }

@@ -25,9 +25,13 @@ class ChatRepository:
         return list(reversed(result.scalars().all()))
 
     async def create(
-        self, workspace_id: uuid.UUID, author_id: uuid.UUID, content: str
+        self, workspace_id: uuid.UUID, author_id: uuid.UUID, content: str,
+        file_url: str | None = None, file_name: str | None = None,
     ) -> ChatMessage:
-        msg = ChatMessage(workspace_id=workspace_id, author_id=author_id, content=content)
+        msg = ChatMessage(
+            workspace_id=workspace_id, author_id=author_id, content=content,
+            file_url=file_url, file_name=file_name,
+        )
         self.db.add(msg)
         await self.db.flush()
         result = await self.db.execute(

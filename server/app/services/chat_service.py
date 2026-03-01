@@ -22,6 +22,8 @@ class ChatService:
             workspace_id=msg.workspace_id,
             author_id=msg.author_id,
             content=msg.content,
+            file_url=msg.file_url,
+            file_name=msg.file_name,
             created_at=msg.created_at,
             author_name=msg.author.name if msg.author else None,
         )
