@@ -47,7 +47,7 @@ export default function CommentSection({ workspaceId, taskId }) {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <span className="text-xs font-medium">{c.author_name || 'Unknown'}</span>
-                <span className="text-xs text-content-muted">{new Date(c.created_at).toLocaleString()}</span>
+                <span className="text-xs text-content-muted">{new Date(c.created_at).toLocaleString([], { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                 {c.author_id === user?.id && (
                   <button
                     onClick={() => remove(c.id)}
