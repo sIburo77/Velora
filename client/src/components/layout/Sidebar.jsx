@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -45,6 +45,33 @@ export default function Sidebar({ open, onClose }) {
   const [showCreate, setShowCreate] = useState(false);
   const [newWsName, setNewWsName] = useState('');
   const [newWsTemplate, setNewWsTemplate] = useState('default');
+  const [themeAnimating, setThemeAnimating] = useState(false);
+  const navRef = useRef(null);
+  const [indicatorStyle, setIndicatorStyle] = useState({});
+
+  useLayoutEffect(() => {
+    if (!navRef.current) return;
+    const activeIndex = navItems.findIndex(item => item.path === location.pathname);
+    if (activeIndex === -1) {
+      setIndicatorStyle({ opacity: 0 });
+      return;
+    }
+    const buttons = navRef.current.querySelectorAll('button');
+    const btn = buttons[activeIndex];
+    if (btn) {
+      setIndicatorStyle({
+        top: btn.offsetTop,
+        height: btn.offsetHeight,
+        opacity: 1,
+      });
+    }
+  }, [location.pathname]);
+
+  const handleToggleTheme = () => {
+    setThemeAnimating(true);
+    toggleTheme();
+    setTimeout(() => setThemeAnimating(false), 400);
+  };
 
   const handleLogout = () => {
     resetWorkspace();
@@ -148,16 +175,20 @@ export default function Sidebar({ open, onClose }) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-4 space-y-1">
+        <nav className="flex-1 px-4 relative" ref={navRef}>
+          <div
+            className="absolute left-0 right-0 rounded-xl bg-violet-500/15 transition-all duration-300 ease-in-out"
+            style={indicatorStyle}
+          />
           {navItems.map(({ icon: Icon, labelKey, path }) => {
             const isActive = location.pathname === path;
             return (
               <button
                 key={path}
                 onClick={() => handleNav(path)}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition ${
+                className={`relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors duration-200 ${
                   isActive
-                    ? 'bg-violet-500/15 text-violet-400'
+                    ? 'text-violet-400'
                     : 'text-content-secondary hover:text-content-primary hover:bg-surface-glass'
                 }`}
               >
@@ -184,10 +215,12 @@ export default function Sidebar({ open, onClose }) {
             </div>
           </div>
           <button
-            onClick={toggleTheme}
+            onClick={handleToggleTheme}
             className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-content-secondary hover:text-violet-400 hover:bg-violet-500/10 transition"
           >
-            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+            <span className={`inline-flex transition-transform duration-500 ${themeAnimating ? 'rotate-[360deg] scale-125' : 'rotate-0 scale-100'}`}>
+              {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+            </span>
             {theme === 'dark' ? t('common.lightMode') : t('common.darkMode')}
           </button>
           <button
