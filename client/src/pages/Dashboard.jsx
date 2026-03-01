@@ -152,12 +152,6 @@ export default function Dashboard() {
       icon: Clock,
       color: 'from-blue-500 to-cyan-600',
     },
-    {
-      label: t('dashboard.workspaces'),
-      value: workspaces.length,
-      icon: Users,
-      color: 'from-pink-500 to-rose-600',
-    },
   ];
 
   return (
@@ -173,7 +167,7 @@ export default function Dashboard() {
       <InvitationBanner />
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         {stats.map(({ label, value, icon: Icon, color }) => (
           <div key={label} className="card group hover:border-[var(--color-border-hover)] transition-all">
             <div className="flex items-center justify-between mb-3">
