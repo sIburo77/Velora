@@ -772,46 +772,8 @@ export default function Board() {
               )}
             </div>
 
-            {/* Add existing tag */}
-            <div className="relative mb-3">
-              <button
-                type="button"
-                onClick={() => setShowTagDropdown(!showTagDropdown)}
-                className="btn-secondary py-1.5 px-3 text-xs w-full flex items-center justify-between"
-              >
-                {t('board.addTag')} <ChevronDown size={12} />
-              </button>
-              {showTagDropdown && (
-                <div className="absolute z-20 mt-1 w-full glass rounded-xl border border-[var(--color-border)] p-2 space-y-1 max-h-40 overflow-y-auto">
-                  {workspaceTags
-                    .filter((wt) => !taskModal.task.tags?.some((tt) => tt.id === wt.id))
-                    .map((tag) => (
-                      <button
-                        key={tag.id}
-                        type="button"
-                        onClick={() => { handleAddTag(taskModal.task.id, tag.id); setShowTagDropdown(false); }}
-                        className="w-full text-left text-xs px-2 py-1.5 rounded-lg hover:bg-surface-glass flex items-center gap-2 group"
-                      >
-                        <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: tag.color }} />
-                        <span className="flex-1">{tag.name}</span>
-                        <button
-                          type="button"
-                          onClick={(e) => { e.stopPropagation(); handleDeleteTag(tag.id); }}
-                          className="opacity-0 group-hover:opacity-100 text-content-muted hover:text-red-400 p-0.5"
-                        >
-                          <Trash2 size={10} />
-                        </button>
-                      </button>
-                    ))}
-                  {workspaceTags.filter((wt) => !taskModal.task.tags?.some((tt) => tt.id === wt.id)).length === 0 && (
-                    <span className="text-xs text-content-muted block px-2 py-1">{t('board.noMoreTags')}</span>
-                  )}
-                </div>
-              )}
-            </div>
-
             {/* Create new tag */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 mb-3">
               <div className="flex gap-1">
                 {tagColors.map((c) => (
                   <button
@@ -837,6 +799,44 @@ export default function Board() {
               >
                 {t('board.createTag')}
               </button>
+            </div>
+
+            {/* Add existing tag */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setShowTagDropdown(!showTagDropdown)}
+                className="btn-secondary py-1.5 px-3 text-xs w-full flex items-center justify-between"
+              >
+                {t('board.addTag')} <ChevronDown size={12} className={`transition-transform duration-200 ${showTagDropdown ? 'rotate-180' : ''}`} />
+              </button>
+              <div className={`mt-1 w-full glass rounded-xl border border-[var(--color-border)] p-2 space-y-1 max-h-40 overflow-y-auto transition-all duration-200 ease-in-out origin-top ${
+                showTagDropdown ? 'opacity-100 scale-y-100' : 'opacity-0 scale-y-0 h-0 p-0 m-0 border-0 overflow-hidden'
+              }`}>
+                {workspaceTags
+                  .filter((wt) => !taskModal.task.tags?.some((tt) => tt.id === wt.id))
+                  .map((tag) => (
+                    <button
+                      key={tag.id}
+                      type="button"
+                      onClick={() => { handleAddTag(taskModal.task.id, tag.id); setShowTagDropdown(false); }}
+                      className="w-full text-left text-xs px-2 py-1.5 rounded-lg hover:bg-surface-glass flex items-center gap-2 group"
+                    >
+                      <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: tag.color }} />
+                      <span className="flex-1">{tag.name}</span>
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); handleDeleteTag(tag.id); }}
+                        className="opacity-0 group-hover:opacity-100 text-content-muted hover:text-red-400 p-0.5"
+                      >
+                        <Trash2 size={10} />
+                      </button>
+                    </button>
+                  ))}
+                {workspaceTags.filter((wt) => !taskModal.task.tags?.some((tt) => tt.id === wt.id)).length === 0 && (
+                  <span className="text-xs text-content-muted block px-2 py-1">{t('board.noMoreTags')}</span>
+                )}
+              </div>
             </div>
           </div>
         )}

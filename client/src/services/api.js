@@ -165,6 +165,7 @@ class ApiService {
 
   // Chat
   getChatHistory(wsId, limit = 50, offset = 0) { return this.get(`/workspaces/${wsId}/chat/history?limit=${limit}&offset=${offset}`); }
+  deleteChatMessage(wsId, messageId) { return this.delete(`/workspaces/${wsId}/chat/${messageId}`); }
   async uploadChatFile(wsId, file) {
     const formData = new FormData();
     formData.append('file', file);

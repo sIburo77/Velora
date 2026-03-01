@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Send, Paperclip, FileText, Download, X, Reply } from 'lucide-react';
+import { Send, Paperclip, FileText, Download, X, Reply, Trash2 } from 'lucide-react';
 import { useWorkspace } from '../context/WorkspaceContext';
 import { useAuth } from '../context/AuthContext';
 import { createChatSocket } from '../services/websocket';
@@ -22,6 +22,7 @@ export default function Chat() {
   const [uploading, setUploading] = useState(false);
   const [replyTo, setReplyTo] = useState(null);
   const [members, setMembers] = useState([]);
+  const [myRole, setMyRole] = useState(null);
   const wsRef = useRef(null);
   const bottomRef = useRef(null);
   const containerRef = useRef(null);
@@ -62,7 +63,11 @@ export default function Chat() {
 
   useEffect(() => {
     if (!currentWorkspace) return;
-    api.getMembers(currentWorkspace.id).then(setMembers).catch(() => {});
+    api.getMembers(currentWorkspace.id).then((data) => {
+      setMembers(data);
+      const me = data.find((m) => m.user_id === user?.id);
+      if (me) setMyRole(me.role);
+    }).catch(() => {});
   }, [currentWorkspace]);
 
   const send = async (e) => {
@@ -120,6 +125,20 @@ export default function Chat() {
       a.download = fileName;
       a.click();
       URL.revokeObjectURL(url);
+    } catch {}
+  };
+
+  const canDelete = (msg) => {
+    if (!user) return false;
+    if (msg.author_id === user.id) return true;
+    return myRole === 'owner' || myRole === 'admin';
+  };
+
+  const handleDelete = async (msg) => {
+    if (!currentWorkspace) return;
+    try {
+      await api.deleteChatMessage(currentWorkspace.id, msg.id);
+      setMessages((prev) => prev.filter((m) => m.id !== msg.id));
     } catch {}
   };
 
@@ -183,6 +202,14 @@ export default function Chat() {
                   >
                     <Reply size={12} />
                   </button>
+                  {canDelete(msg) && (
+                    <button
+                      onClick={() => handleDelete(msg)}
+                      className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-surface-glass text-content-muted hover:text-red-400 transition"
+                    >
+                      <Trash2 size={12} />
+                    </button>
+                  )}
                 </div>
                 <div className={`mt-1 inline-block rounded-2xl px-4 py-2 ${
                   own
