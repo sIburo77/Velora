@@ -33,6 +33,24 @@ export default function AttachmentList({ workspaceId, taskId, canEdit }) {
     } catch {}
   };
 
+  const download = async (attachment) => {
+    try {
+      const token = localStorage.getItem('velora_token');
+      const res = await fetch(
+        `/api/workspaces/${workspaceId}/board/tasks/${taskId}/attachments/${attachment.id}/download`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (!res.ok) throw new Error();
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = attachment.filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {}
+  };
+
   const formatSize = (bytes) => {
     if (bytes < 1024) return bytes + ' B';
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
@@ -67,12 +85,12 @@ export default function AttachmentList({ workspaceId, taskId, canEdit }) {
                 <span className="text-xs text-content-muted shrink-0">{formatSize(a.size_bytes)}</span>
               </div>
               <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
-                <a
-                  href={`/api/workspaces/${workspaceId}/board/tasks/${taskId}/attachments/${a.id}/download`}
+                <button
+                  onClick={() => download(a)}
                   className="p-1 rounded hover:bg-surface-glass text-content-secondary"
                 >
                   <Download size={14} />
-                </a>
+                </button>
                 {canEdit && (
                   <button
                     onClick={() => remove(a.id)}
