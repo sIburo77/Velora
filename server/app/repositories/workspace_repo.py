@@ -30,6 +30,9 @@ class WorkspaceRepository:
         await self.db.flush()
         return workspace
 
+    async def flush(self) -> None:
+        await self.db.flush()
+
     async def update(self, workspace: Workspace, **kwargs) -> Workspace:
         for key, value in kwargs.items():
             if value is not None:

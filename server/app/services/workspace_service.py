@@ -37,6 +37,7 @@ class WorkspaceService:
         return WorkspaceResponse(
             id=workspace.id,
             name=workspace.name,
+            avatar_url=workspace.avatar_url,
             created_at=workspace.created_at,
             role="admin",
         )
@@ -44,7 +45,10 @@ class WorkspaceService:
     async def get_user_workspaces(self, user_id: uuid.UUID) -> list[WorkspaceResponse]:
         rows = await self.workspace_repo.get_user_workspaces(user_id)
         return [
-            WorkspaceResponse(id=ws.id, name=ws.name, created_at=ws.created_at, role=role)
+            WorkspaceResponse(
+                id=ws.id, name=ws.name, avatar_url=ws.avatar_url,
+                created_at=ws.created_at, role=role,
+            )
             for ws, role in rows
         ]
 
@@ -57,7 +61,22 @@ class WorkspaceService:
             raise NotFoundError("Workspace not found")
         updated = await self.workspace_repo.update(workspace, name=data.name)
         return WorkspaceResponse(
-            id=updated.id, name=updated.name, created_at=updated.created_at, role="admin"
+            id=updated.id, name=updated.name, avatar_url=updated.avatar_url,
+            created_at=updated.created_at, role="admin",
+        )
+
+    async def update_avatar(
+        self, workspace_id: uuid.UUID, user_id: uuid.UUID, avatar_url: str | None,
+    ) -> WorkspaceResponse:
+        await self._check_admin(workspace_id, user_id)
+        workspace = await self.workspace_repo.get_by_id(workspace_id)
+        if not workspace:
+            raise NotFoundError("Workspace not found")
+        workspace.avatar_url = avatar_url
+        await self.workspace_repo.flush()
+        return WorkspaceResponse(
+            id=workspace.id, name=workspace.name, avatar_url=workspace.avatar_url,
+            created_at=workspace.created_at, role="admin",
         )
 
     async def delete_workspace(self, workspace_id: uuid.UUID, user_id: uuid.UUID) -> None:

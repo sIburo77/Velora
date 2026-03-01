@@ -185,7 +185,9 @@
     "member": "Member",
     "editor": "Editor",
     "admin": "Admin",
-    "roleUpdated": "Role updated"
+    "roleUpdated": "Role updated",
+    "avatarUpdated": "Avatar updated",
+    "avatarRemoved": "Avatar removed"
   },
   "sidebar": {
     "dashboard": "Dashboard",

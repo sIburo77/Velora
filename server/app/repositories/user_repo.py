@@ -32,6 +32,9 @@ class UserRepository:
         result = await self.db.execute(select(User).where(User.google_id == google_id))
         return result.scalar_one_or_none()
 
+    async def flush(self) -> None:
+        await self.db.flush()
+
     async def update(self, user: User, **kwargs) -> User:
         for key, value in kwargs.items():
             if value is not None:

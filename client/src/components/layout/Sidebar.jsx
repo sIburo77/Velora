@@ -112,9 +112,13 @@ export default function Sidebar({ open, onClose }) {
             className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl glass glass-hover transition"
           >
             <div className="flex items-center gap-2 min-w-0">
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500 to-blue-500 flex items-center justify-center text-xs font-bold text-white shrink-0">
-                {currentWorkspace?.name?.[0]?.toUpperCase() || 'W'}
-              </div>
+              {currentWorkspace?.avatar_url ? (
+                <img src={currentWorkspace.avatar_url} alt="" className="w-7 h-7 rounded-lg object-cover shrink-0" />
+              ) : (
+                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500 to-blue-500 flex items-center justify-center text-xs font-bold text-white shrink-0">
+                  {currentWorkspace?.name?.[0]?.toUpperCase() || 'W'}
+                </div>
+              )}
               <span className="text-sm font-medium truncate">{currentWorkspace?.name || t('sidebar.select')}</span>
             </div>
             <ChevronDown size={16} className={`transition text-content-muted ${showWs ? 'rotate-180' : ''}`} />
@@ -167,9 +171,13 @@ export default function Sidebar({ open, onClose }) {
         {/* User */}
         <div className="p-4 border-t border-[var(--color-border)]">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center text-xs font-bold text-white">
-              {user?.name?.[0]?.toUpperCase()}
-            </div>
+            {user?.avatar_url ? (
+              <img src={user.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover" />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center text-xs font-bold text-white">
+                {user?.name?.[0]?.toUpperCase()}
+              </div>
+            )}
             <div className="min-w-0">
               <p className="text-sm font-medium truncate">{user?.name}</p>
               <p className="text-xs text-content-muted truncate">{user?.email}</p>
