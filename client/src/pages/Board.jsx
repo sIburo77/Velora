@@ -5,7 +5,7 @@ import {
   Search, Filter, Calendar, Flag, CheckCircle, Circle, X, ChevronDown, Tag,
 } from 'lucide-react';
 import {
-  DndContext, DragOverlay, closestCorners, PointerSensor, useSensor, useSensors,
+  DndContext, DragOverlay, closestCorners, PointerSensor, useSensor, useSensors, useDroppable,
 } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -94,6 +94,15 @@ function TaskCard({ task, colId, onToggle, onEdit, onDelete, overlay = false, me
           </span>
         )}
       </div>
+    </div>
+  );
+}
+
+function DroppableColumn({ id, children }) {
+  const { setNodeRef, isOver } = useDroppable({ id });
+  return (
+    <div ref={setNodeRef} className={`flex-1 p-2 space-y-2 overflow-y-auto min-h-[60px] rounded-xl transition ${isOver ? 'bg-violet-500/10 ring-2 ring-violet-500/30' : ''}`}>
+      {children}
     </div>
   );
 }
@@ -643,9 +652,8 @@ export default function Board() {
                 <SortableContext
                   items={(col.tasks || []).map((t) => t.id)}
                   strategy={verticalListSortingStrategy}
-                  id={col.id}
                 >
-                  <div className="flex-1 p-2 space-y-2 overflow-y-auto min-h-[60px]">
+                  <DroppableColumn id={col.id}>
                     {col.tasks?.map((task) => (
                       <SortableTaskCard
                         key={task.id}
@@ -657,7 +665,7 @@ export default function Board() {
                         members={members}
                       />
                     ))}
-                  </div>
+                  </DroppableColumn>
                 </SortableContext>
 
                 {/* Add Task */}
