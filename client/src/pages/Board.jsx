@@ -369,12 +369,15 @@ export default function Board() {
     return null;
   };
 
+  const [dragOriginColId, setDragOriginColId] = useState(null);
+
   const handleDragStart = (event) => {
     const { active } = event;
     const col = findColumnByTaskId(active.id);
     if (col) {
       const task = col.tasks.find((t) => t.id === active.id);
       setActiveTask(task);
+      setDragOriginColId(col.id);
     }
   };
 
@@ -416,47 +419,44 @@ export default function Board() {
 
   const handleDragEnd = async (event) => {
     const { active, over } = event;
+    const originColId = dragOriginColId;
     setActiveTask(null);
+    setDragOriginColId(null);
     if (!over || !board) return;
 
-    const activeCol = findColumnByTaskId(active.id);
-    if (!activeCol) return;
+    const currentCol = findColumnByTaskId(active.id);
+    if (!currentCol) return;
 
-    let overCol = findColumnByTaskId(over.id);
-    if (!overCol) {
-      overCol = board.columns.find((c) => c.id === over.id);
-    }
-    if (!overCol) return;
+    const isCrossColumn = originColId && originColId !== currentCol.id;
 
-    if (activeCol.id === overCol.id) {
+    if (!isCrossColumn) {
       // Within-column reorder
-      const oldIdx = activeCol.tasks.findIndex((t) => t.id === active.id);
-      const newIdx = activeCol.tasks.findIndex((t) => t.id === over.id);
-      if (oldIdx !== newIdx && newIdx >= 0) {
-        const reordered = arrayMove(activeCol.tasks, oldIdx, newIdx);
+      const oldIdx = currentCol.tasks.findIndex((t) => t.id === active.id);
+      const overIdx = currentCol.tasks.findIndex((t) => t.id === over.id);
+      if (oldIdx !== overIdx && overIdx >= 0) {
+        const reordered = arrayMove(currentCol.tasks, oldIdx, overIdx);
         setBoard((prev) => ({
           ...prev,
           columns: prev.columns.map((c) =>
-            c.id === activeCol.id ? { ...c, tasks: reordered } : c
+            c.id === currentCol.id ? { ...c, tasks: reordered } : c
           ),
         }));
         try {
-          await api.reorderTasks(currentWorkspace.id, activeCol.id, reordered.map((t) => t.id));
+          await api.reorderTasks(currentWorkspace.id, currentCol.id, reordered.map((t) => t.id));
         } catch {
           fetchBoard();
         }
       }
     } else {
       // Cross-column move — state was already updated in handleDragOver
-      const targetTasks = overCol.tasks || [];
+      const targetTasks = currentCol.tasks || [];
       const position = targetTasks.findIndex((t) => t.id === active.id);
       try {
         await api.moveTask(currentWorkspace.id, active.id, {
-          column_id: overCol.id,
+          column_id: currentCol.id,
           position: position >= 0 ? position : 0,
         });
-        // Also reorder remaining tasks in the target column
-        await api.reorderTasks(currentWorkspace.id, overCol.id, targetTasks.map((t) => t.id));
+        await api.reorderTasks(currentWorkspace.id, currentCol.id, targetTasks.map((t) => t.id));
       } catch {
         fetchBoard();
       }
