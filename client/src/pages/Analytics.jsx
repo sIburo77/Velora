@@ -53,12 +53,13 @@ export default function Analytics() {
       </div>
     );
   }
+  const maxColCount = useMemo(() => data ? Math.max(...Object.values(data.by_column), 1) : 1, [data]);
+  const totalPriority = useMemo(() => data ? (Object.values(data.by_priority).reduce((a, b) => a + b, 0) || 1) : 1, [data]);
+
   if (!currentWorkspace || !data) return <div className="text-content-secondary text-center mt-20">{t('analytics.noData')}</div>;
 
-  const maxColCount = useMemo(() => Math.max(...Object.values(data.by_column), 1), [data]);
   const priorityLabels = { high: t('analytics.high'), medium: t('analytics.medium'), low: t('analytics.low') };
   const priorityColors = { high: 'bg-red-500', medium: 'bg-amber-500', low: 'bg-emerald-500' };
-  const totalPriority = useMemo(() => Object.values(data.by_priority).reduce((a, b) => a + b, 0) || 1, [data]);
 
   return (
     <div className="max-w-5xl mx-auto">
