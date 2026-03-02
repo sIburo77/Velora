@@ -76,11 +76,11 @@ export default function Calendar() {
     <div className="max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">{t('calendar.title')}</h1>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
           <button onClick={prev} className="p-2 rounded-xl hover:bg-surface-glass transition">
             <ChevronLeft size={20} />
           </button>
-          <span className="text-lg font-semibold min-w-[200px] text-center">
+          <span className="text-base sm:text-lg font-semibold min-w-[120px] sm:min-w-[200px] text-center">
             {monthNames[month]} {year}
           </span>
           <button onClick={next} className="p-2 rounded-xl hover:bg-surface-glass transition">
@@ -91,36 +91,36 @@ export default function Calendar() {
 
       <div className="grid grid-cols-7 gap-px glass rounded-2xl overflow-hidden">
         {weekDays.map((d) => (
-          <div key={d} className="text-center text-xs font-medium text-content-muted py-3 bg-surface-elevated">
+          <div key={d} className="text-center text-[10px] sm:text-xs font-medium text-content-muted py-2 sm:py-3 bg-surface-elevated">
             {d}
           </div>
         ))}
         {cells.map((day, i) => (
           <div
             key={i}
-            className={`min-h-[100px] p-2 border-t border-[var(--color-border)] ${
+            className={`min-h-[60px] sm:min-h-[100px] p-1 sm:p-2 border-t border-[var(--color-border)] ${
               day ? 'bg-surface-elevated' : 'bg-surface-sidebar'
             }`}
           >
             {day && (
               <>
-                <span className={`text-sm font-medium inline-flex w-7 h-7 items-center justify-center rounded-full ${
+                <span className={`text-xs sm:text-sm font-medium inline-flex w-5 h-5 sm:w-7 sm:h-7 items-center justify-center rounded-full ${
                   isToday(day) ? 'bg-violet-500 text-white' : 'text-content-secondary'
                 }`}>
                   {day}
                 </span>
-                <div className="mt-1 space-y-1">
+                <div className="mt-1 space-y-0.5 sm:space-y-1">
                   {(tasksByDay[day] || []).slice(0, 3).map((task) => (
                     <div
                       key={task.id}
-                      className={`text-xs px-1.5 py-0.5 rounded truncate ${
+                      className={`text-xs px-1 sm:px-1.5 py-0.5 rounded truncate ${
                         task.is_completed
                           ? 'line-through text-content-muted'
                           : 'text-content-primary'
                       }`}
                     >
                       <span className={`inline-block w-1.5 h-1.5 rounded-full mr-1 ${priorityDots[task.priority]}`} />
-                      {task.title}
+                      <span className="hidden sm:inline">{task.title}</span>
                     </div>
                   ))}
                   {(tasksByDay[day] || []).length > 3 && (

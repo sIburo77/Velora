@@ -146,7 +146,7 @@ export default function Chat() {
 
   if (loading) {
     return (
-      <div className="flex flex-col h-[calc(100vh-6rem)] md:h-[calc(100vh-3rem)] max-w-4xl mx-auto">
+      <div className="flex flex-col h-[calc(100dvh-6rem)] md:h-[calc(100dvh-3rem)] max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-4">
           <div className="h-8 w-24 rounded bg-surface-elevated animate-pulse" />
         </div>
@@ -166,7 +166,7 @@ export default function Chat() {
 
   return (
     <>
-    <DropZone onFileDrop={(file) => setPendingFile(file)} className="flex flex-col h-[calc(100vh-6rem)] md:h-[calc(100vh-3rem)] max-w-4xl mx-auto">
+    <DropZone onFileDrop={(file) => setPendingFile(file)} className="flex flex-col h-[calc(100dvh-6rem)] md:h-[calc(100dvh-3rem)] max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">{t('chat.title')}</h1>
         <span className={`text-xs px-2 py-1 rounded-full ${connected ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
@@ -193,7 +193,7 @@ export default function Chat() {
                   {msg.author_name?.[0]?.toUpperCase() || '?'}
                 </div>
               )}
-              <div className={`max-w-[70%] ${own ? 'text-right' : ''}`}>
+              <div className={`max-w-[85%] sm:max-w-[70%] break-words ${own ? 'text-right' : ''}`}>
                 <div className={`flex items-center gap-2 ${own ? 'justify-end' : ''}`}>
                   <span className="text-sm font-medium">{msg.author_name || 'Unknown'}</span>
                   <span className="text-xs text-content-muted">
@@ -201,14 +201,14 @@ export default function Chat() {
                   </span>
                   <button
                     onClick={() => setReplyTo(msg)}
-                    className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-surface-glass text-content-muted hover:text-violet-400 transition"
+                    className="sm:opacity-0 sm:group-hover:opacity-100 p-0.5 rounded hover:bg-surface-glass text-content-muted hover:text-violet-400 transition"
                   >
                     <Reply size={12} />
                   </button>
                   {canDelete(msg) && (
                     <button
                       onClick={() => setConfirmDelete(msg)}
-                      className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-surface-glass text-content-muted hover:text-red-400 transition"
+                      className="sm:opacity-0 sm:group-hover:opacity-100 p-0.5 rounded hover:bg-surface-glass text-content-muted hover:text-red-400 transition"
                     >
                       <Trash2 size={12} />
                     </button>
@@ -222,7 +222,7 @@ export default function Chat() {
                   {msg.reply_to_content && (
                     <div className={`mb-2 px-2 py-1 rounded-lg border-l-2 border-violet-500/50 text-xs text-content-muted ${own ? 'text-left' : ''}`}>
                       <span className="font-medium text-violet-400">{msg.reply_to_author_name || 'Unknown'}</span>
-                      <p className="truncate max-w-[200px]">{msg.reply_to_content}</p>
+                      <p className="truncate max-w-full">{msg.reply_to_content}</p>
                     </div>
                   )}
                   {msg.file_url && (
@@ -232,7 +232,7 @@ export default function Chat() {
                         <img
                           src={msg.file_url}
                           alt={msg.file_name}
-                          className="max-w-[280px] max-h-[200px] rounded-lg object-cover cursor-pointer"
+                          className="max-w-full sm:max-w-[280px] max-h-[200px] rounded-lg object-cover cursor-pointer"
                           onClick={() => window.open(msg.file_url, '_blank')}
                         />
                       ) : (
@@ -294,7 +294,7 @@ export default function Chat() {
           autoFocus
           disabled={!connected || uploading}
         />
-        <button type="submit" className="btn-primary px-6" disabled={!connected || uploading}>
+        <button type="submit" className="btn-primary px-3 sm:px-6" disabled={!connected || uploading}>
           <Send size={18} />
         </button>
       </form>

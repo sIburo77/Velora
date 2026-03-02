@@ -97,8 +97,8 @@ export default function Dashboard() {
           <Mail size={16} /> {t('dashboard.pendingInvitations')}
         </h3>
         {pendingInvitations.map((inv) => (
-          <div key={inv.id} className="card flex items-center justify-between py-4 border-violet-500/30">
-            <div>
+          <div key={inv.id} className="card flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-4 border-violet-500/30">
+            <div className="min-w-0">
               <p className="font-medium">
                 {t('dashboard.invitedTo')} <span className="text-violet-400">{inv.workspace_name || 'a workspace'}</span>
               </p>
@@ -106,7 +106,7 @@ export default function Dashboard() {
                 {t('dashboard.expires')} {new Date(inv.expires_at).toLocaleDateString()}
               </p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 shrink-0">
               <button onClick={() => acceptInvite(inv.token)} className="btn-primary py-2 text-sm flex items-center gap-1">
                 <Check size={16} /> {t('common.accept')}
               </button>
@@ -238,7 +238,7 @@ export default function Dashboard() {
       {analytics?.by_priority && Object.keys(analytics.by_priority).length > 0 && (
         <div className="card mt-6">
           <h3 className="font-semibold mb-4">{t('dashboard.priorityDistribution')}</h3>
-          <div className="flex gap-4">
+          <div className="flex flex-wrap gap-3 sm:gap-4">
             {Object.entries(analytics.by_priority).map(([priority, count]) => {
               const colors = { high: 'bg-red-500', medium: 'bg-amber-500', low: 'bg-emerald-500' };
               return (

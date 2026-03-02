@@ -191,7 +191,7 @@ export default function Settings() {
         <h2 className="font-semibold mb-4 flex items-center gap-2">
           <User size={18} className="text-violet-400" /> {t('settings.profile')}
         </h2>
-        <div className="flex items-start gap-6">
+        <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
           <div className="relative group shrink-0">
             {user?.avatar_url ? (
               <img src={user.avatar_url} alt="" className="w-20 h-20 rounded-full object-cover" />
@@ -200,29 +200,29 @@ export default function Settings() {
                 {user?.name?.[0]?.toUpperCase()}
               </div>
             )}
-            <label className="absolute inset-0 flex items-center justify-center rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition cursor-pointer">
+            <label className="absolute inset-0 flex items-center justify-center rounded-full bg-black/50 sm:opacity-0 sm:group-hover:opacity-100 opacity-0 active:opacity-100 transition cursor-pointer">
               <Camera size={20} className="text-white" />
               <input ref={userAvatarRef} type="file" accept="image/*" className="hidden" onChange={handleUserAvatar} />
             </label>
             {user?.avatar_url && (
               <button
                 onClick={removeUserAvatar}
-                className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+                className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 flex items-center justify-center sm:opacity-0 sm:group-hover:opacity-100 transition"
               >
                 <X size={12} className="text-white" />
               </button>
             )}
           </div>
-          <div className="space-y-3 flex-1">
+          <div className="space-y-3 flex-1 w-full sm:w-auto">
             <div>
               <label className="block text-sm text-content-secondary mb-1">{t('auth.name')}</label>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <input
                   className="input-field flex-1"
                   value={profileName}
                   onChange={(e) => setProfileName(e.target.value)}
                 />
-                <button onClick={saveProfile} className="btn-primary flex items-center gap-2">
+                <button onClick={saveProfile} className="btn-primary flex items-center justify-center gap-2 shrink-0">
                   <Save size={16} /> {t('common.save')}
                 </button>
               </div>
@@ -240,14 +240,14 @@ export default function Settings() {
         <h2 className="font-semibold mb-4 flex items-center gap-2">
           <Mail size={18} className="text-cyan-400" /> {t('settings.acceptInvitation')}
         </h2>
-        <form onSubmit={handleAcceptInvitation} className="flex gap-2">
+        <form onSubmit={handleAcceptInvitation} className="flex flex-col sm:flex-row gap-2">
           <input
             className="input-field flex-1"
             placeholder={t('settings.pasteToken')}
             value={acceptToken}
             onChange={(e) => setAcceptToken(e.target.value)}
           />
-          <button type="submit" className="btn-primary">{t('common.accept')}</button>
+          <button type="submit" className="btn-primary shrink-0">{t('common.accept')}</button>
         </form>
       </div>
 
@@ -255,7 +255,7 @@ export default function Settings() {
       {currentWorkspace && (
         <>
           <div className="card">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex flex-wrap items-center justify-between mb-4 gap-2">
               <h2 className="font-semibold flex items-center gap-2">
                 <Building size={18} className="text-blue-400" /> {t('settings.workspace')}
               </h2>
@@ -264,7 +264,7 @@ export default function Settings() {
               </button>
             </div>
             {isAdmin && (
-              <div className="flex items-start gap-6">
+              <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
                 <div className="relative group shrink-0">
                   {currentWorkspace?.avatar_url ? (
                     <img src={currentWorkspace.avatar_url} alt="" className="w-16 h-16 rounded-xl object-cover" />
@@ -273,29 +273,29 @@ export default function Settings() {
                       {currentWorkspace?.name?.[0]?.toUpperCase() || 'W'}
                     </div>
                   )}
-                  <label className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/50 opacity-0 group-hover:opacity-100 transition cursor-pointer">
+                  <label className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/50 sm:opacity-0 sm:group-hover:opacity-100 opacity-0 active:opacity-100 transition cursor-pointer">
                     <Camera size={18} className="text-white" />
                     <input ref={wsAvatarRef} type="file" accept="image/*" className="hidden" onChange={handleWsAvatar} />
                   </label>
                   {currentWorkspace?.avatar_url && (
                     <button
                       onClick={removeWsAvatar}
-                      className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+                      className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 flex items-center justify-center sm:opacity-0 sm:group-hover:opacity-100 transition"
                     >
                       <X size={12} className="text-white" />
                     </button>
                   )}
                 </div>
-                <div className="space-y-3 flex-1">
+                <div className="space-y-3 flex-1 w-full sm:w-auto">
                   <div>
                     <label className="block text-sm text-content-secondary mb-1">{t('auth.name')}</label>
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2">
                       <input
                         className="input-field flex-1"
                         value={wsName}
                         onChange={(e) => setWsName(e.target.value)}
                       />
-                      <button onClick={saveWorkspaceName} className="btn-primary flex items-center gap-2">
+                      <button onClick={saveWorkspaceName} className="btn-primary flex items-center justify-center gap-2 shrink-0">
                         <Save size={16} /> {t('common.save')}
                       </button>
                     </div>
@@ -321,17 +321,17 @@ export default function Settings() {
             </h2>
             <div className="space-y-2 mb-4">
               {members.map((m) => (
-                <div key={m.id} className="flex items-center justify-between py-2 px-3 rounded-xl hover:bg-surface-glass">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-blue-500 flex items-center justify-center text-xs font-bold">
+                <div key={m.id} className="flex flex-wrap items-center justify-between gap-y-2 py-2 px-3 rounded-xl hover:bg-surface-glass">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-blue-500 flex items-center justify-center text-xs font-bold shrink-0">
                       {m.user_name?.[0]?.toUpperCase() || '?'}
                     </div>
-                    <div>
-                      <p className="text-sm font-medium">{m.user_name || 'Unknown'}</p>
-                      <p className="text-xs text-content-muted">{m.user_email}</p>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium truncate">{m.user_name || 'Unknown'}</p>
+                      <p className="text-xs text-content-muted truncate">{m.user_email}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 shrink-0">
                     {isAdmin && m.role !== 'admin' ? (
                       <select
                         value={m.role}
@@ -367,7 +367,7 @@ export default function Settings() {
             {isAdmin && (
               <>
                 <h3 className="text-sm font-medium text-content-secondary mb-2">{t('settings.inviteByEmail')}</h3>
-                <form onSubmit={sendInvitation} className="flex gap-2 mb-4">
+                <form onSubmit={sendInvitation} className="flex flex-col sm:flex-row gap-2 mb-4">
                   <input
                     className="input-field flex-1"
                     type="email"
@@ -375,7 +375,7 @@ export default function Settings() {
                     value={inviteEmail}
                     onChange={(e) => setInviteEmail(e.target.value)}
                   />
-                  <button type="submit" className="btn-primary flex items-center gap-2">
+                  <button type="submit" className="btn-primary flex items-center justify-center gap-2 shrink-0">
                     <Send size={16} /> {t('common.invite')}
                   </button>
                 </form>
@@ -386,9 +386,9 @@ export default function Settings() {
                     <h3 className="text-sm font-medium text-content-secondary mb-2">{t('settings.pendingInvitations')}</h3>
                     <div className="space-y-2">
                       {invitations.filter(i => i.status === 'pending').map((inv) => (
-                        <div key={inv.id} className="flex items-center justify-between py-2 px-3 rounded-xl bg-surface-elevated">
-                          <div>
-                            <p className="text-sm">{inv.email}</p>
+                        <div key={inv.id} className="flex flex-wrap items-center justify-between gap-y-2 py-2 px-3 rounded-xl bg-surface-elevated">
+                          <div className="min-w-0">
+                            <p className="text-sm truncate">{inv.email}</p>
                             <p className="text-xs text-content-muted">
                               {t('dashboard.expires')}: {new Date(inv.expires_at).toLocaleDateString()}
                             </p>

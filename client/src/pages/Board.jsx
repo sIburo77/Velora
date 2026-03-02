@@ -45,7 +45,7 @@ const TaskCard = memo(function TaskCard({ task, colId, onToggle, onEdit, onDelet
           </span>
         </div>
         {!overlay && (
-          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition shrink-0">
+          <div className="flex items-center gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition shrink-0">
             <button onClick={() => onEdit(colId, task)} className="p-1 rounded hover:bg-surface-glass text-content-secondary">
               <Edit3 size={12} />
             </button>
@@ -497,13 +497,13 @@ export default function Board() {
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
         <h1 className="text-2xl font-bold">{board?.name || t('board.board')}</h1>
         <div className="flex items-center gap-3">
-          <div className="relative">
+          <div className="relative flex-1 sm:flex-none">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-content-muted" />
             <input
-              className="input-field pl-9 py-2 text-sm w-56"
+              className="input-field pl-9 py-2 text-sm w-full sm:w-56"
               placeholder={t('board.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -524,9 +524,9 @@ export default function Board() {
 
       {/* Filters */}
       {showFilters && (
-        <div className="flex items-center gap-3 mb-4 flex-wrap">
+        <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-3 mb-4">
           <select
-            className="input-field py-2 text-sm w-40"
+            className="input-field py-2 text-sm w-full sm:w-40"
             value={filterPriority}
             onChange={(e) => setFilterPriority(e.target.value)}
           >
@@ -536,7 +536,7 @@ export default function Board() {
             <option value="low">{t('board.low')}</option>
           </select>
           <select
-            className="input-field py-2 text-sm w-40"
+            className="input-field py-2 text-sm w-full sm:w-40"
             value={filterCompleted}
             onChange={(e) => setFilterCompleted(e.target.value)}
           >
@@ -546,20 +546,20 @@ export default function Board() {
           </select>
           <input
             type="date"
-            className="input-field py-2 text-sm w-40"
+            className="input-field py-2 text-sm w-full sm:w-40"
             value={filterDateFrom}
             onChange={(e) => setFilterDateFrom(e.target.value)}
             placeholder={t('board.dateFrom')}
           />
           <input
             type="date"
-            className="input-field py-2 text-sm w-40"
+            className="input-field py-2 text-sm w-full sm:w-40"
             value={filterDateTo}
             onChange={(e) => setFilterDateTo(e.target.value)}
             placeholder={t('board.dateTo')}
           />
           <select
-            className="input-field py-2 text-sm w-40"
+            className="input-field py-2 text-sm w-full sm:w-40"
             value={filterAssignee}
             onChange={(e) => setFilterAssignee(e.target.value)}
           >
@@ -606,12 +606,12 @@ export default function Board() {
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
       >
-        <div className="flex-1 overflow-x-auto">
-          <div className="flex gap-4 min-h-[400px] pb-4">
+        <div className="flex-1 overflow-x-auto snap-x snap-mandatory sm:snap-none">
+          <div className="flex gap-4 min-h-[400px] pb-4 px-1 sm:px-0">
             {board?.columns?.map((col) => (
               <div
                 key={col.id}
-                className="w-72 shrink-0 flex flex-col rounded-2xl glass"
+                className="w-[85vw] sm:w-72 snap-start shrink-0 flex flex-col rounded-2xl glass"
               >
                 {/* Column Header */}
                 <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--color-border)]">
@@ -680,7 +680,7 @@ export default function Board() {
 
             {/* Add Column */}
             {showAddCol ? (
-              <div className="w-72 shrink-0">
+              <div className="w-[85vw] sm:w-72 shrink-0">
                 <form onSubmit={addColumn} className="glass rounded-2xl p-4">
                   <input
                     className="input-field mb-3 text-sm"
@@ -700,7 +700,7 @@ export default function Board() {
             ) : (
               <button
                 onClick={() => setShowAddCol(true)}
-                className="w-72 shrink-0 rounded-2xl border-2 border-dashed border-[var(--color-border-hover)] hover:border-violet-500/30 flex items-center justify-center text-content-secondary hover:text-violet-400 transition min-h-[200px]"
+                className="w-[85vw] sm:w-72 shrink-0 rounded-2xl border-2 border-dashed border-[var(--color-border-hover)] hover:border-violet-500/30 flex items-center justify-center text-content-secondary hover:text-violet-400 transition min-h-[200px]"
               >
                 <Plus size={20} className="mr-2" /> {t('board.addColumn')}
               </button>
@@ -710,7 +710,7 @@ export default function Board() {
 
         <DragOverlay>
           {activeTask && (
-            <div className="w-68">
+            <div className="w-72">
               <TaskCard task={activeTask} overlay members={members} />
             </div>
           )}
@@ -745,7 +745,7 @@ export default function Board() {
               onChange={(e) => setTaskForm({ ...taskForm, description: e.target.value })}
             />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-sm text-content-secondary mb-1">{t('board.priority')}</label>
               <select
@@ -820,7 +820,7 @@ export default function Board() {
             </div>
 
             {/* Create new tag */}
-            <div className="flex items-center gap-2 mb-3">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-3">
               <div className="flex gap-1">
                 {tagColors.map((c) => (
                   <button
@@ -832,20 +832,22 @@ export default function Board() {
                   />
                 ))}
               </div>
-              <input
-                className="input-field flex-1 py-1.5 text-xs"
-                placeholder={t('board.tagName')}
-                value={newTagName}
-                onChange={(e) => setNewTagName(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleCreateTag())}
-              />
-              <button
-                type="button"
-                onClick={handleCreateTag}
-                className="btn-primary py-1.5 px-3 text-xs"
-              >
-                {t('board.createTag')}
-              </button>
+              <div className="flex gap-2 w-full sm:w-auto sm:flex-1">
+                <input
+                  className="input-field flex-1 py-1.5 text-xs"
+                  placeholder={t('board.tagName')}
+                  value={newTagName}
+                  onChange={(e) => setNewTagName(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleCreateTag())}
+                />
+                <button
+                  type="button"
+                  onClick={handleCreateTag}
+                  className="btn-primary py-1.5 px-3 text-xs shrink-0"
+                >
+                  {t('board.createTag')}
+                </button>
+              </div>
             </div>
 
             {/* Add existing tag */}
