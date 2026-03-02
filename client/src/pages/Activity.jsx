@@ -49,14 +49,6 @@ export default function Activity() {
     fetchLogs(0);
   }, [currentWorkspace]);
 
-  if (!currentWorkspace) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <p className="text-content-muted">{t('activity.selectWorkspace')}</p>
-      </div>
-    );
-  }
-
   const grouped = useMemo(() => {
     const groups = {};
     for (const log of logs) {
@@ -66,6 +58,14 @@ export default function Activity() {
     }
     return groups;
   }, [logs]);
+
+  if (!currentWorkspace) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <p className="text-content-muted">{t('activity.selectWorkspace')}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-3xl mx-auto">

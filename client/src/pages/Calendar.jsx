@@ -32,6 +32,17 @@ export default function Calendar() {
   const prev = () => setDate(new Date(year, month - 1, 1));
   const next = () => setDate(new Date(year, month + 1, 1));
 
+  const tasksByDay = useMemo(() => {
+    const result = {};
+    tasks.forEach((t) => {
+      if (!t.deadline) return;
+      const d = new Date(t.deadline).getDate();
+      if (!result[d]) result[d] = [];
+      result[d].push(t);
+    });
+    return result;
+  }, [tasks]);
+
   if (loading) return <SkeletonCalendar />;
   if (!currentWorkspace) {
     return <div className="text-center text-content-secondary mt-20">{t('calendar.selectWorkspace')}</div>;
@@ -44,17 +55,6 @@ export default function Calendar() {
 
   for (let i = 0; i < offset; i++) cells.push(null);
   for (let d = 1; d <= daysInMonth; d++) cells.push(d);
-
-  const tasksByDay = useMemo(() => {
-    const result = {};
-    tasks.forEach((t) => {
-      if (!t.deadline) return;
-      const d = new Date(t.deadline).getDate();
-      if (!result[d]) result[d] = [];
-      result[d].push(t);
-    });
-    return result;
-  }, [tasks]);
 
   const today = new Date();
   const isToday = (d) =>
