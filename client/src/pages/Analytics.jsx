@@ -23,6 +23,9 @@ export default function Analytics() {
       .finally(() => setLoading(false));
   }, [currentWorkspace]);
 
+  const maxColCount = useMemo(() => data ? Math.max(...Object.values(data.by_column), 1) : 1, [data]);
+  const totalPriority = useMemo(() => data ? (Object.values(data.by_priority).reduce((a, b) => a + b, 0) || 1) : 1, [data]);
+
   if (loading) {
     return (
       <div className="max-w-5xl mx-auto">
@@ -53,8 +56,6 @@ export default function Analytics() {
       </div>
     );
   }
-  const maxColCount = useMemo(() => data ? Math.max(...Object.values(data.by_column), 1) : 1, [data]);
-  const totalPriority = useMemo(() => data ? (Object.values(data.by_priority).reduce((a, b) => a + b, 0) || 1) : 1, [data]);
 
   if (!currentWorkspace || !data) return <div className="text-content-secondary text-center mt-20">{t('analytics.noData')}</div>;
 
