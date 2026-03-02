@@ -155,6 +155,7 @@ class BoardRepository:
         has_deadline: bool | None = None,
         deadline_from: "datetime | None" = None,
         deadline_to: "datetime | None" = None,
+        assigned_to: "str | None" = None,
     ) -> list[Task]:
         stmt = select(Task).join(Column, Column.id == Task.column_id).where(Column.board_id == board_id)
 
@@ -170,6 +171,11 @@ class BoardRepository:
             stmt = stmt.where(Task.deadline >= deadline_from)
         if deadline_to:
             stmt = stmt.where(Task.deadline <= deadline_to)
+        if assigned_to:
+            if assigned_to == "unassigned":
+                stmt = stmt.where(Task.assigned_to.is_(None))
+            else:
+                stmt = stmt.where(Task.assigned_to == uuid.UUID(assigned_to))
 
         result = await self.db.execute(stmt.options(selectinload(Task.tags)).order_by(Task.position))
         return result.scalars().all()

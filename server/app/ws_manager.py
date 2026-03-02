@@ -11,6 +11,8 @@ class ConnectionManager:
         self.chat_connections: dict[uuid.UUID, list[tuple[uuid.UUID, WebSocket]]] = defaultdict(list)
         # user_id -> list of websockets
         self.notification_connections: dict[uuid.UUID, list[WebSocket]] = defaultdict(list)
+        # workspace_id -> list of (user_id, websocket)
+        self.board_connections: dict[uuid.UUID, list[tuple[uuid.UUID, WebSocket]]] = defaultdict(list)
 
     async def connect_chat(self, workspace_id: uuid.UUID, user_id: uuid.UUID, ws: WebSocket):
         await ws.accept()
@@ -56,6 +58,30 @@ class ConnectionManager:
                 dead.append(ws)
         for ws in dead:
             self.notification_connections[user_id].remove(ws)
+
+
+    async def connect_board(self, workspace_id: uuid.UUID, user_id: uuid.UUID, ws: WebSocket):
+        await ws.accept()
+        self.board_connections[workspace_id].append((user_id, ws))
+
+    def disconnect_board(self, workspace_id: uuid.UUID, user_id: uuid.UUID, ws: WebSocket):
+        self.board_connections[workspace_id] = [
+            (uid, w) for uid, w in self.board_connections[workspace_id]
+            if w != ws
+        ]
+        if not self.board_connections[workspace_id]:
+            del self.board_connections[workspace_id]
+
+    async def broadcast_board(self, workspace_id: uuid.UUID, event: dict):
+        connections = self.board_connections.get(workspace_id, [])
+        dead = []
+        for uid, ws in connections:
+            try:
+                await ws.send_json(event)
+            except Exception:
+                dead.append((uid, ws))
+        for item in dead:
+            self.board_connections[workspace_id].remove(item)
 
 
 manager = ConnectionManager()

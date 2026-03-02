@@ -10,9 +10,11 @@ from app.models.task_comment import TaskComment
 from app.models.task_attachment import TaskAttachment
 from app.models.chat_message import ChatMessage
 from app.models.notification import Notification
+from app.models.activity_log import ActivityLog
 
 __all__ = [
     "User", "Workspace", "WorkspaceMember", "Invitation",
     "Board", "Column", "Task", "VerificationCode",
     "TaskComment", "TaskAttachment", "ChatMessage", "Notification",
+    "ActivityLog",
 ]

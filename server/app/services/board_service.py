@@ -6,6 +6,8 @@ from app.core.exceptions import NotFoundError, ForbiddenError
 from app.repositories.board_repo import BoardRepository
 from app.repositories.workspace_repo import WorkspaceRepository
 from app.repositories.notification_repo import NotificationRepository
+from app.repositories.activity_log_repo import ActivityLogRepository
+from app.ws_manager import manager
 from app.schemas.board import (
     BoardFullResponse,
     ColumnCreate,
@@ -23,10 +25,11 @@ from app.schemas.board import (
 
 
 class BoardService:
-    def __init__(self, board_repo: BoardRepository, workspace_repo: WorkspaceRepository, notification_repo: NotificationRepository):
+    def __init__(self, board_repo: BoardRepository, workspace_repo: WorkspaceRepository, notification_repo: NotificationRepository, activity_repo: ActivityLogRepository | None = None):
         self.board_repo = board_repo
         self.workspace_repo = workspace_repo
         self.notification_repo = notification_repo
+        self.activity_repo = activity_repo
 
     async def _check_membership(self, workspace_id: uuid.UUID, user_id: uuid.UUID) -> str:
         member = await self.workspace_repo.get_member(workspace_id, user_id)
@@ -39,6 +42,13 @@ class BoardService:
         if role == "viewer":
             raise ForbiddenError("Viewers cannot modify the board")
         return role
+
+    async def _log(self, workspace_id, user_id, action, target_type, target_name="", details=None):
+        if self.activity_repo:
+            await self.activity_repo.create(workspace_id, user_id, action, target_type, target_name, details)
+
+    async def _broadcast(self, workspace_id, event_type, data=None):
+        await manager.broadcast_board(workspace_id, {"type": event_type, "data": data})
 
     async def get_board(self, workspace_id: uuid.UUID, user_id: uuid.UUID) -> BoardFullResponse:
         await self._check_membership(workspace_id, user_id)
@@ -82,6 +92,8 @@ class BoardService:
             position = await self.board_repo.get_max_column_position(board.id) + 1
 
         column = await self.board_repo.create_column(board.id, data.name, position)
+        await self._log(workspace_id, user_id, "created", "column", data.name)
+        await self._broadcast(workspace_id, "board_updated")
         return ColumnResponse.model_validate(column)
 
     async def update_column(
@@ -108,7 +120,10 @@ class BoardService:
         column = await self.board_repo.get_column(column_id)
         if not column:
             raise NotFoundError("Column not found")
+        col_name = column.name
         await self.board_repo.delete_column(column_id)
+        await self._log(workspace_id, user_id, "deleted", "column", col_name)
+        await self._broadcast(workspace_id, "board_updated")
 
     async def reorder_columns(
         self, workspace_id: uuid.UUID, column_ids: list[uuid.UUID], user_id: uuid.UUID
@@ -149,6 +164,8 @@ class BoardService:
                 title=f"Task assigned: {data.title}",
                 body=f"You have been assigned to \"{data.title}\"",
             )
+        await self._log(workspace_id, user_id, "created", "task", data.title)
+        await self._broadcast(workspace_id, "board_updated")
         return TaskResponse.model_validate(task)
 
     async def update_task(
@@ -169,6 +186,11 @@ class BoardService:
 
         updated = await self.board_repo.update_task(task, **kwargs)
 
+        if data.is_completed is True and not task.is_completed:
+            await self._log(workspace_id, user_id, "completed", "task", updated.title)
+        else:
+            await self._log(workspace_id, user_id, "updated", "task", updated.title)
+
         new_assigned = data.assigned_to
         if new_assigned and new_assigned != old_assigned and new_assigned != user_id:
             await self.notification_repo.create(
@@ -178,6 +200,7 @@ class BoardService:
                 body=f"You have been assigned to \"{updated.title}\"",
             )
 
+        await self._broadcast(workspace_id, "board_updated")
         return TaskResponse.model_validate(updated)
 
     async def delete_task(
@@ -187,7 +210,10 @@ class BoardService:
         task = await self.board_repo.get_task(task_id)
         if not task:
             raise NotFoundError("Task not found")
+        task_title = task.title
         await self.board_repo.delete_task(task_id)
+        await self._log(workspace_id, user_id, "deleted", "task", task_title)
+        await self._broadcast(workspace_id, "board_updated")
 
     async def reorder_tasks(
         self, workspace_id: uuid.UUID, column_id: uuid.UUID,
@@ -195,6 +221,7 @@ class BoardService:
     ) -> None:
         await self._check_can_edit(workspace_id, user_id)
         await self.board_repo.batch_update_task_positions(column_id, task_ids)
+        await self._broadcast(workspace_id, "board_updated")
 
     async def move_task(
         self, workspace_id: uuid.UUID, task_id: uuid.UUID, data: TaskMove, user_id: uuid.UUID
@@ -224,6 +251,7 @@ class BoardService:
         has_deadline: bool | None = None,
         deadline_from: "datetime | None" = None,
         deadline_to: "datetime | None" = None,
+        assigned_to: "str | None" = None,
     ) -> list[TaskResponse]:
         await self._check_membership(workspace_id, user_id)
         board = await self.board_repo.get_by_workspace(workspace_id)
@@ -232,6 +260,7 @@ class BoardService:
         tasks = await self.board_repo.search_tasks(
             board.id, query=query, priority=priority, is_completed=is_completed,
             has_deadline=has_deadline, deadline_from=deadline_from, deadline_to=deadline_to,
+            assigned_to=assigned_to,
         )
         return [TaskResponse.model_validate(t) for t in tasks]
 

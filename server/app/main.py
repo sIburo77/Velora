@@ -1,6 +1,8 @@
 import uuid
 import re
+import asyncio
 
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Query
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -8,16 +10,26 @@ from app.core.config import settings
 from app.core.security import decode_access_token
 from app.core.database import get_db
 from app.api.routes import auth, users, workspaces, invitations, boards
-from app.api.routes import comments, attachments, chat, notifications, tags
+from app.api.routes import comments, attachments, chat, notifications, tags, activity_logs
 from app.ws_manager import manager
 from app.repositories.chat_repo import ChatRepository
 from app.repositories.workspace_repo import WorkspaceRepository
 from app.repositories.notification_repo import NotificationRepository
+from app.tasks.deadline_checker import deadline_checker_loop
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    task = asyncio.create_task(deadline_checker_loop())
+    yield
+    task.cancel()
+
 
 app = FastAPI(
     title="Velora",
     description="Task Planner + CRM Board API",
     version="2.0.0",
+    lifespan=lifespan,
 )
 
 app.add_middleware(
@@ -38,6 +50,7 @@ app.include_router(attachments.router, prefix="/api")
 app.include_router(chat.router, prefix="/api")
 app.include_router(notifications.router, prefix="/api")
 app.include_router(tags.router, prefix="/api")
+app.include_router(activity_logs.router, prefix="/api")
 
 
 def _authenticate_ws(token: str) -> uuid.UUID | None:
@@ -142,6 +155,30 @@ async def ws_notifications(websocket: WebSocket, token: str = Query(...)):
         manager.disconnect_notifications(user_id, websocket)
     except Exception:
         manager.disconnect_notifications(user_id, websocket)
+
+
+@app.websocket("/ws/board/{workspace_id}")
+async def ws_board(websocket: WebSocket, workspace_id: uuid.UUID, token: str = Query(...)):
+    user_id = _authenticate_ws(token)
+    if not user_id:
+        await websocket.close(code=4001)
+        return
+
+    async for db in get_db():
+        workspace_repo = WorkspaceRepository(db)
+        member = await workspace_repo.get_member(workspace_id, user_id)
+        if not member:
+            await websocket.close(code=4003)
+            return
+
+        await manager.connect_board(workspace_id, user_id, websocket)
+        try:
+            while True:
+                await websocket.receive_text()
+        except WebSocketDisconnect:
+            manager.disconnect_board(workspace_id, user_id, websocket)
+        except Exception:
+            manager.disconnect_board(workspace_id, user_id, websocket)
 
 
 @app.get("/api/health")

@@ -15,6 +15,7 @@ import api from '../services/api';
 import { SkeletonColumn } from '../components/ui/Skeleton';
 import Markdown from '../components/ui/Markdown';
 import Modal from '../components/ui/Modal';
+import ConfirmDialog from '../components/ui/ConfirmDialog';
 import CommentSection from '../components/tasks/CommentSection';
 import AttachmentList from '../components/tasks/AttachmentList';
 
@@ -133,11 +134,13 @@ export default function Board() {
   const [filterCompleted, setFilterCompleted] = useState('');
   const [filterDateFrom, setFilterDateFrom] = useState('');
   const [filterDateTo, setFilterDateTo] = useState('');
+  const [filterAssignee, setFilterAssignee] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [searchResults, setSearchResults] = useState(null);
   const [activeTask, setActiveTask] = useState(null);
   const [workspaceTags, setWorkspaceTags] = useState([]);
   const [showTagDropdown, setShowTagDropdown] = useState(false);
+  const [confirmDialog, setConfirmDialog] = useState({ open: false, title: '', message: '', onConfirm: null });
   const [newTagName, setNewTagName] = useState('');
   const [newTagColor, setNewTagColor] = useState('#8b5cf6');
 
@@ -171,6 +174,29 @@ export default function Board() {
     api.getTags(currentWorkspace.id).then(setWorkspaceTags).catch(() => {});
     api.getMembers(currentWorkspace.id).then(setMembers).catch(() => {});
   }, [currentWorkspace]);
+
+  // Board WebSocket for real-time updates
+  useEffect(() => {
+    if (!currentWorkspace) return;
+    const token = localStorage.getItem('velora_token');
+    if (!token) return;
+
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const ws = new WebSocket(`${protocol}//${window.location.host}/ws/board/${currentWorkspace.id}?token=${token}`);
+
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'board_updated') {
+          fetchBoard();
+        }
+      } catch {}
+    };
+
+    return () => {
+      ws.close();
+    };
+  }, [currentWorkspace, fetchBoard]);
 
   const tagColors = ['#8b5cf6', '#ef4444', '#f59e0b', '#10b981', '#3b82f6', '#ec4899', '#06b6d4', '#f97316'];
 
@@ -306,7 +332,7 @@ export default function Board() {
   };
 
   const handleSearch = async () => {
-    if (!searchQuery && !filterPriority && filterCompleted === '' && !filterDateFrom && !filterDateTo) {
+    if (!searchQuery && !filterPriority && filterCompleted === '' && !filterDateFrom && !filterDateTo && !filterAssignee) {
       setSearchResults(null);
       return;
     }
@@ -317,6 +343,7 @@ export default function Board() {
       if (filterCompleted !== '') params.is_completed = filterCompleted;
       if (filterDateFrom) params.deadline_from = new Date(filterDateFrom).toISOString();
       if (filterDateTo) params.deadline_to = new Date(filterDateTo + 'T23:59:59').toISOString();
+      if (filterAssignee) params.assigned_to = filterAssignee;
       const results = await api.searchTasks(currentWorkspace.id, params);
       setSearchResults(results);
     } catch (err) {
@@ -330,6 +357,7 @@ export default function Board() {
     setFilterCompleted('');
     setFilterDateFrom('');
     setFilterDateTo('');
+    setFilterAssignee('');
     setSearchResults(null);
   };
 
@@ -521,6 +549,17 @@ export default function Board() {
             onChange={(e) => setFilterDateTo(e.target.value)}
             placeholder={t('board.dateTo')}
           />
+          <select
+            className="input-field py-2 text-sm w-40"
+            value={filterAssignee}
+            onChange={(e) => setFilterAssignee(e.target.value)}
+          >
+            <option value="">{t('board.assignee')}</option>
+            <option value="unassigned">{t('board.unassigned')}</option>
+            {members.map((m) => (
+              <option key={m.user_id} value={m.user_id}>{m.user_name}</option>
+            ))}
+          </select>
           <button onClick={handleSearch} className="btn-primary py-2 text-sm">{t('common.apply')}</button>
           {searchResults && (
             <button onClick={clearFilters} className="btn-secondary py-2 text-sm flex items-center gap-1">
@@ -592,7 +631,7 @@ export default function Board() {
                       <Edit3 size={14} />
                     </button>
                     <button
-                      onClick={() => deleteColumn(col.id)}
+                      onClick={() => setConfirmDialog({ open: true, title: t('board.deleteColumn'), message: t('board.confirmDeleteColumn'), onConfirm: () => deleteColumn(col.id) })}
                       className="p-1 rounded-lg hover:bg-red-500/10 text-content-secondary hover:text-red-400 transition"
                     >
                       <Trash2 size={14} />
@@ -614,7 +653,7 @@ export default function Board() {
                         colId={col.id}
                         onToggle={toggleComplete}
                         onEdit={openTaskModal}
-                        onDelete={deleteTask}
+                        onDelete={(taskId) => setConfirmDialog({ open: true, title: t('board.deleteTask'), message: t('board.confirmDeleteTask'), onConfirm: () => deleteTask(taskId) })}
                         members={members}
                       />
                     ))}
@@ -856,6 +895,14 @@ export default function Board() {
           </>
         )}
       </Modal>
+
+      <ConfirmDialog
+        isOpen={confirmDialog.open}
+        onClose={() => setConfirmDialog({ ...confirmDialog, open: false })}
+        onConfirm={confirmDialog.onConfirm}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+      />
     </div>
   );
 }

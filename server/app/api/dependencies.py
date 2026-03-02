@@ -17,6 +17,7 @@ from app.repositories.attachment_repo import AttachmentRepository
 from app.repositories.chat_repo import ChatRepository
 from app.repositories.notification_repo import NotificationRepository
 from app.repositories.tag_repo import TagRepository
+from app.repositories.activity_log_repo import ActivityLogRepository
 from app.services.auth_service import AuthService
 from app.services.user_service import UserService
 from app.services.workspace_service import WorkspaceService
@@ -28,6 +29,7 @@ from app.services.attachment_service import AttachmentService
 from app.services.chat_service import ChatService
 from app.services.notification_service import NotificationService
 from app.services.tag_service import TagService
+from app.services.activity_log_service import ActivityLogService
 
 security = HTTPBearer()
 
@@ -112,8 +114,9 @@ def get_board_service(
     board_repo: BoardRepository = Depends(get_board_repo),
     workspace_repo: WorkspaceRepository = Depends(get_workspace_repo),
     notification_repo: NotificationRepository = Depends(get_notification_repo),
+    activity_repo: ActivityLogRepository = Depends(get_activity_log_repo),
 ) -> BoardService:
-    return BoardService(board_repo, workspace_repo, notification_repo)
+    return BoardService(board_repo, workspace_repo, notification_repo, activity_repo)
 
 
 def get_comment_service(
@@ -157,3 +160,14 @@ def get_tag_service(
     board_repo: BoardRepository = Depends(get_board_repo),
 ) -> TagService:
     return TagService(tag_repo, workspace_repo, board_repo)
+
+
+def get_activity_log_repo(db: AsyncSession = Depends(get_db)) -> ActivityLogRepository:
+    return ActivityLogRepository(db)
+
+
+def get_activity_log_service(
+    activity_repo: ActivityLogRepository = Depends(get_activity_log_repo),
+    workspace_repo: WorkspaceRepository = Depends(get_workspace_repo),
+) -> ActivityLogService:
+    return ActivityLogService(activity_repo, workspace_repo)

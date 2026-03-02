@@ -17,6 +17,7 @@ import Analytics from './pages/Analytics';
 import Settings from './pages/Settings';
 import Chat from './pages/Chat';
 import Calendar from './pages/Calendar';
+import Activity from './pages/Activity';
 
 export default function App() {
   return (
@@ -48,6 +49,7 @@ export default function App() {
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/chat" element={<Chat />} />
                   <Route path="/calendar" element={<Calendar />} />
+                  <Route path="/activity" element={<Activity />} />
                 </Route>
 
                 <Route path="*" element={<Navigate to="/" replace />} />

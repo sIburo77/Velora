@@ -147,7 +147,11 @@
     "dateTo": "По",
     "assignee": "Исполнитель",
     "unassigned": "Не назначен",
-    "taskAssigned": "Задача назначена"
+    "taskAssigned": "Задача назначена",
+    "deleteColumn": "Удалить колонку",
+    "confirmDeleteColumn": "Все задачи в этой колонке будут удалены. Продолжить?",
+    "deleteTask": "Удалить задачу",
+    "confirmDeleteTask": "Задача и все её данные будут удалены. Продолжить?"
   },
   "analytics": {
     "title": "Аналитика",
@@ -213,7 +217,22 @@
     "calendar": "Календарь",
     "select": "Выбрать",
     "newWorkspace": "Новое пространство",
+    "activity": "Активность",
     "logout": "Выйти"
+  },
+  "activity": {
+    "title": "Журнал активности",
+    "selectWorkspace": "Выберите пространство для просмотра активности",
+    "empty": "Активности пока нет",
+    "loadMore": "Загрузить ещё",
+    "unknown": "Неизвестно",
+    "created": "создал(а)",
+    "updated": "обновил(а)",
+    "completed": "завершил(а)",
+    "deleted": "удалил(а)",
+    "moved": "переместил(а)",
+    "target_task": "задачу",
+    "target_column": "колонку"
   },
   "chat": {
     "title": "Чат",
@@ -223,7 +242,9 @@
     "placeholder": "Введите сообщение...",
     "selectWorkspace": "Выберите пространство для чата",
     "reply": "Ответить",
-    "replyingTo": "Ответ на"
+    "replyingTo": "Ответ на",
+    "deleteMessage": "Удалить сообщение",
+    "confirmDeleteMessage": "Сообщение будет удалено для всех. Продолжить?"
   },
   "calendar": {
     "title": "Календарь",
