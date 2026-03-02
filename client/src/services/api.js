@@ -189,6 +189,9 @@ class ApiService {
   removeTagFromTask(wsId, taskId, tagId) { return this.delete(`/workspaces/${wsId}/board/tasks/${taskId}/tags/${tagId}`); }
   reorderTasks(wsId, colId, taskIds) { return this.put(`/workspaces/${wsId}/board/columns/${colId}/tasks/reorder`, { task_ids: taskIds }); }
 
+  // Activity
+  getActivityLogs(wsId, limit = 50, offset = 0) { return this.get(`/workspaces/${wsId}/activity?limit=${limit}&offset=${offset}`); }
+
   // Notifications
   getNotifications(limit = 50) { return this.get(`/notifications?limit=${limit}`); }
   getUnreadCount() { return this.get('/notifications/unread-count'); }

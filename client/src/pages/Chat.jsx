@@ -9,6 +9,7 @@ import { SkeletonMessage } from '../components/ui/Skeleton';
 import Markdown from '../components/ui/Markdown';
 import MentionInput from '../components/ui/MentionInput';
 import DropZone from '../components/ui/DropZone';
+import ConfirmDialog from '../components/ui/ConfirmDialog';
 
 export default function Chat() {
   const { t } = useTranslation();
@@ -23,6 +24,7 @@ export default function Chat() {
   const [replyTo, setReplyTo] = useState(null);
   const [members, setMembers] = useState([]);
   const [myRole, setMyRole] = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState(null);
   const wsRef = useRef(null);
   const bottomRef = useRef(null);
   const containerRef = useRef(null);
@@ -163,6 +165,7 @@ export default function Chat() {
   }
 
   return (
+    <>
     <DropZone onFileDrop={(file) => setPendingFile(file)} className="flex flex-col h-[calc(100vh-6rem)] md:h-[calc(100vh-3rem)] max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">{t('chat.title')}</h1>
@@ -204,7 +207,7 @@ export default function Chat() {
                   </button>
                   {canDelete(msg) && (
                     <button
-                      onClick={() => handleDelete(msg)}
+                      onClick={() => setConfirmDelete(msg)}
                       className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-surface-glass text-content-muted hover:text-red-400 transition"
                     >
                       <Trash2 size={12} />
@@ -296,5 +299,14 @@ export default function Chat() {
         </button>
       </form>
     </DropZone>
+
+    <ConfirmDialog
+      isOpen={!!confirmDelete}
+      onClose={() => setConfirmDelete(null)}
+      onConfirm={() => confirmDelete && handleDelete(confirmDelete)}
+      title={t('chat.deleteMessage')}
+      message={t('chat.confirmDeleteMessage')}
+    />
+    </>
   );
 }

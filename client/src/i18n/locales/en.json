@@ -147,7 +147,11 @@
     "dateTo": "To",
     "assignee": "Assignee",
     "unassigned": "Unassigned",
-    "taskAssigned": "Task assigned"
+    "taskAssigned": "Task assigned",
+    "deleteColumn": "Delete column",
+    "confirmDeleteColumn": "All tasks in this column will be deleted. Continue?",
+    "deleteTask": "Delete task",
+    "confirmDeleteTask": "This task and all its data will be deleted. Continue?"
   },
   "analytics": {
     "title": "Analytics",
@@ -213,7 +217,22 @@
     "calendar": "Calendar",
     "select": "Select",
     "newWorkspace": "New Workspace",
+    "activity": "Activity",
     "logout": "Log out"
+  },
+  "activity": {
+    "title": "Activity Log",
+    "selectWorkspace": "Select a workspace to view activity",
+    "empty": "No activity yet",
+    "loadMore": "Load more",
+    "unknown": "Unknown",
+    "created": "created",
+    "updated": "updated",
+    "completed": "completed",
+    "deleted": "deleted",
+    "moved": "moved",
+    "target_task": "task",
+    "target_column": "column"
   },
   "chat": {
     "title": "Chat",
@@ -223,7 +242,9 @@
     "placeholder": "Type a message...",
     "selectWorkspace": "Select a workspace to open the chat",
     "reply": "Reply",
-    "replyingTo": "Replying to"
+    "replyingTo": "Replying to",
+    "deleteMessage": "Delete message",
+    "confirmDeleteMessage": "This message will be deleted for everyone. Continue?"
   },
   "calendar": {
     "title": "Calendar",

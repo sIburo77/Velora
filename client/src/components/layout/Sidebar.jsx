@@ -16,6 +16,7 @@ import {
   MessageCircle,
   CalendarDays,
   Users,
+  History,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useWorkspace } from '../../context/WorkspaceContext';
@@ -33,6 +34,7 @@ const navItems = [
   { icon: CalendarDays, labelKey: 'sidebar.calendar', path: '/calendar' },
   { icon: MessageCircle, labelKey: 'sidebar.chat', path: '/chat' },
   { icon: BarChart3, labelKey: 'sidebar.analytics', path: '/analytics' },
+  { icon: History, labelKey: 'sidebar.activity', path: '/activity' },
   { icon: Settings, labelKey: 'sidebar.settings', path: '/settings' },
 ];
 

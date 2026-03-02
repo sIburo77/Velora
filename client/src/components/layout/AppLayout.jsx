@@ -1,10 +1,21 @@
-import { useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { useState, useRef, useEffect } from 'react';
+import { Outlet, useLocation } from 'react-router-dom';
 import { Menu } from 'lucide-react';
 import Sidebar from './Sidebar';
 
 export default function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const location = useLocation();
+  const mainRef = useRef(null);
+
+  useEffect(() => {
+    if (mainRef.current) {
+      mainRef.current.classList.remove('page-enter');
+      void mainRef.current.offsetWidth;
+      mainRef.current.classList.add('page-enter');
+      mainRef.current.scrollTo(0, 0);
+    }
+  }, [location.pathname]);
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -23,7 +34,7 @@ export default function AppLayout() {
 
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-      <main className="flex-1 overflow-y-auto p-6 pt-20 md:pt-6">
+      <main ref={mainRef} className="flex-1 overflow-y-auto p-6 pt-20 md:pt-6 page-enter">
         <Outlet />
       </main>
     </div>
