@@ -83,6 +83,14 @@ def get_notification_repo(db: AsyncSession = Depends(get_db)) -> NotificationRep
     return NotificationRepository(db)
 
 
+def get_tag_repo(db: AsyncSession = Depends(get_db)) -> TagRepository:
+    return TagRepository(db)
+
+
+def get_activity_log_repo(db: AsyncSession = Depends(get_db)) -> ActivityLogRepository:
+    return ActivityLogRepository(db)
+
+
 # Services
 def get_auth_service(
     user_repo: UserRepository = Depends(get_user_repo),
@@ -150,20 +158,12 @@ def get_notification_service(
     return NotificationService(notification_repo)
 
 
-def get_tag_repo(db: AsyncSession = Depends(get_db)) -> TagRepository:
-    return TagRepository(db)
-
-
 def get_tag_service(
     tag_repo: TagRepository = Depends(get_tag_repo),
     workspace_repo: WorkspaceRepository = Depends(get_workspace_repo),
     board_repo: BoardRepository = Depends(get_board_repo),
 ) -> TagService:
     return TagService(tag_repo, workspace_repo, board_repo)
-
-
-def get_activity_log_repo(db: AsyncSession = Depends(get_db)) -> ActivityLogRepository:
-    return ActivityLogRepository(db)
 
 
 def get_activity_log_service(
