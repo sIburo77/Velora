@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { History, Plus, Trash2, Edit3, CheckCircle, ArrowRight } from 'lucide-react';
 import { useWorkspace } from '../context/WorkspaceContext';
@@ -57,7 +57,7 @@ export default function Activity() {
     );
   }
 
-  const groupByDate = (logs) => {
+  const grouped = useMemo(() => {
     const groups = {};
     for (const log of logs) {
       const date = new Date(log.created_at).toLocaleDateString();
@@ -65,9 +65,7 @@ export default function Activity() {
       groups[date].push(log);
     }
     return groups;
-  };
-
-  const grouped = groupByDate(logs);
+  }, [logs]);
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -115,7 +113,7 @@ export default function Activity() {
                   >
                     <div className="mt-0.5 shrink-0">
                       {log.user_avatar ? (
-                        <img src={log.user_avatar} alt="" className="w-7 h-7 rounded-full object-cover" />
+                        <img src={log.user_avatar} alt="" className="w-7 h-7 rounded-full object-cover" loading="lazy" />
                       ) : (
                         <div className="w-7 h-7 rounded-full bg-gradient-to-br from-violet-500 to-blue-500 flex items-center justify-center text-[10px] font-bold text-white">
                           {(log.user_name || '?')[0].toUpperCase()}

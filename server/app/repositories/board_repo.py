@@ -156,6 +156,8 @@ class BoardRepository:
         deadline_from: "datetime | None" = None,
         deadline_to: "datetime | None" = None,
         assigned_to: "str | None" = None,
+        limit: int = 50,
+        offset: int = 0,
     ) -> list[Task]:
         stmt = select(Task).join(Column, Column.id == Task.column_id).where(Column.board_id == board_id)
 
@@ -177,5 +179,6 @@ class BoardRepository:
             else:
                 stmt = stmt.where(Task.assigned_to == uuid.UUID(assigned_to))
 
-        result = await self.db.execute(stmt.options(selectinload(Task.tags)).order_by(Task.position))
+        stmt = stmt.options(selectinload(Task.tags)).order_by(Task.position).limit(limit).offset(offset)
+        result = await self.db.execute(stmt)
         return result.scalars().all()

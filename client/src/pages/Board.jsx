@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback, useMemo, memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Plus, MoreHorizontal, Trash2, Edit3, GripVertical,
@@ -27,7 +27,7 @@ const priorityColors = {
 
 const priorityDots = { high: 'bg-red-500', medium: 'bg-amber-500', low: 'bg-emerald-500' };
 
-function TaskCard({ task, colId, onToggle, onEdit, onDelete, overlay = false, members = [] }) {
+const TaskCard = memo(function TaskCard({ task, colId, onToggle, onEdit, onDelete, overlay = false, members = [] }) {
   const assignee = task.assigned_to ? members.find((m) => m.user_id === task.assigned_to) : null;
   return (
     <div className={`rounded-xl p-3 bg-surface-elevated border border-[var(--color-border)] ${overlay ? 'shadow-2xl shadow-violet-500/20 rotate-2 scale-105' : 'hover:border-[var(--color-border-hover)]'} transition group`}>
@@ -84,7 +84,7 @@ function TaskCard({ task, colId, onToggle, onEdit, onDelete, overlay = false, me
         {assignee && (
           <span className="text-xs text-content-muted flex items-center gap-1 ml-auto">
             {assignee.avatar_url ? (
-              <img src={assignee.avatar_url} alt="" className="w-4 h-4 rounded-full object-cover" />
+              <img src={assignee.avatar_url} alt="" className="w-4 h-4 rounded-full object-cover" loading="lazy" />
             ) : (
               <div className="w-4 h-4 rounded-full bg-gradient-to-br from-violet-500 to-blue-500 flex items-center justify-center text-[8px] font-bold text-white">
                 {(assignee.user_name || '?')[0].toUpperCase()}
@@ -96,7 +96,7 @@ function TaskCard({ task, colId, onToggle, onEdit, onDelete, overlay = false, me
       </div>
     </div>
   );
-}
+});
 
 function DroppableColumn({ id, children }) {
   const { setNodeRef, isOver } = useDroppable({ id });
@@ -107,7 +107,7 @@ function DroppableColumn({ id, children }) {
   );
 }
 
-function SortableTaskCard({ task, colId, onToggle, onEdit, onDelete, members }) {
+const SortableTaskCard = memo(function SortableTaskCard({ task, colId, onToggle, onEdit, onDelete, members }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: task.id,
     data: { type: 'task', task, colId },
@@ -123,7 +123,7 @@ function SortableTaskCard({ task, colId, onToggle, onEdit, onDelete, members }) 
       <TaskCard task={task} colId={colId} onToggle={onToggle} onEdit={onEdit} onDelete={onDelete} members={members} />
     </div>
   );
-}
+});
 
 export default function Board() {
   const { t } = useTranslation();
@@ -276,7 +276,7 @@ export default function Board() {
     }
   };
 
-  const openTaskModal = (columnId, task = null) => {
+  const openTaskModal = useCallback((columnId, task = null) => {
     if (task) {
       setTaskForm({
         title: task.title,
@@ -289,7 +289,7 @@ export default function Board() {
       setTaskForm({ title: '', description: '', priority: 'medium', deadline: '', assigned_to: '' });
     }
     setTaskModal({ open: true, columnId, task });
-  };
+  }, []);
 
   const saveTask = async (e) => {
     e.preventDefault();
@@ -321,7 +321,7 @@ export default function Board() {
     }
   };
 
-  const deleteTask = async (taskId) => {
+  const deleteTask = useCallback(async (taskId) => {
     try {
       await api.deleteTask(currentWorkspace.id, taskId);
       fetchBoard();
@@ -329,16 +329,16 @@ export default function Board() {
     } catch (err) {
       error(err.message);
     }
-  };
+  }, [currentWorkspace, fetchBoard]);
 
-  const toggleComplete = async (task) => {
+  const toggleComplete = useCallback(async (task) => {
     try {
       await api.updateTask(currentWorkspace.id, task.id, { is_completed: !task.is_completed });
       fetchBoard();
     } catch (err) {
       error(err.message);
     }
-  };
+  }, [currentWorkspace, fetchBoard]);
 
   const handleSearch = async () => {
     if (!searchQuery && !filterPriority && filterCompleted === '' && !filterDateFrom && !filterDateTo && !filterAssignee) {

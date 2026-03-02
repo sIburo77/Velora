@@ -183,7 +183,7 @@ export default function Chat() {
           return (
             <div key={msg.id} className={`flex gap-3 group ${own ? 'flex-row-reverse' : ''}`}>
               {msg.author_avatar ? (
-                <img src={msg.author_avatar} alt="" className="w-8 h-8 rounded-full object-cover shrink-0" />
+                <img src={msg.author_avatar} alt="" className="w-8 h-8 rounded-full object-cover shrink-0" loading="lazy" />
               ) : (
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 ${
                   own

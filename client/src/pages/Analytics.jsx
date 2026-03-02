@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BarChart3, CheckCircle, Clock, Layers, Flag, TrendingUp, Users } from 'lucide-react';
 import { useWorkspace } from '../context/WorkspaceContext';
@@ -55,10 +55,10 @@ export default function Analytics() {
   }
   if (!currentWorkspace || !data) return <div className="text-content-secondary text-center mt-20">{t('analytics.noData')}</div>;
 
-  const maxColCount = Math.max(...Object.values(data.by_column), 1);
+  const maxColCount = useMemo(() => Math.max(...Object.values(data.by_column), 1), [data]);
   const priorityLabels = { high: t('analytics.high'), medium: t('analytics.medium'), low: t('analytics.low') };
   const priorityColors = { high: 'bg-red-500', medium: 'bg-amber-500', low: 'bg-emerald-500' };
-  const totalPriority = Object.values(data.by_priority).reduce((a, b) => a + b, 0) || 1;
+  const totalPriority = useMemo(() => Object.values(data.by_priority).reduce((a, b) => a + b, 0) || 1, [data]);
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -193,7 +193,7 @@ export default function Analytics() {
             {data.by_member.map((m) => (
               <div key={m.user_id} className="flex items-center gap-3 p-3 rounded-xl bg-surface-elevated border border-[var(--color-border)]">
                 {m.avatar_url ? (
-                  <img src={m.avatar_url} alt="" className="w-9 h-9 rounded-full object-cover shrink-0" />
+                  <img src={m.avatar_url} alt="" className="w-9 h-9 rounded-full object-cover shrink-0" loading="lazy" />
                 ) : (
                   <div className="w-9 h-9 rounded-full bg-gradient-to-br from-violet-500 to-blue-500 flex items-center justify-center text-xs font-bold text-white shrink-0">
                     {m.user_name?.[0]?.toUpperCase() || '?'}
