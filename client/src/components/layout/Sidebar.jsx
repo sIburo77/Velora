@@ -2,10 +2,6 @@ import { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
-  LayoutDashboard,
-  Kanban,
-  BarChart3,
-  Settings,
   LogOut,
   Plus,
   ChevronDown,
@@ -13,11 +9,17 @@ import {
   Moon,
   Globe,
   X,
-  MessageCircle,
-  CalendarDays,
   Users,
-  History,
 } from 'lucide-react';
+import {
+  AnimatedLayoutDashboard,
+  AnimatedKanban,
+  AnimatedCalendarDays,
+  AnimatedMessageCircle,
+  AnimatedBarChart,
+  AnimatedActivity,
+  AnimatedSettings,
+} from '../icons/AnimatedIcons';
 import { useAuth } from '../../context/AuthContext';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -29,13 +31,13 @@ import TemplatePicker from '../workspace/TemplatePicker';
 import MemberListModal from '../workspace/MemberListModal';
 
 const navItems = [
-  { icon: LayoutDashboard, labelKey: 'sidebar.dashboard', path: '/dashboard' },
-  { icon: Kanban, labelKey: 'sidebar.board', path: '/board' },
-  { icon: CalendarDays, labelKey: 'sidebar.calendar', path: '/calendar' },
-  { icon: MessageCircle, labelKey: 'sidebar.chat', path: '/chat' },
-  { icon: BarChart3, labelKey: 'sidebar.analytics', path: '/analytics' },
-  { icon: History, labelKey: 'sidebar.activity', path: '/activity' },
-  { icon: Settings, labelKey: 'sidebar.settings', path: '/settings' },
+  { icon: AnimatedLayoutDashboard, labelKey: 'sidebar.dashboard', path: '/dashboard' },
+  { icon: AnimatedKanban, labelKey: 'sidebar.board', path: '/board' },
+  { icon: AnimatedCalendarDays, labelKey: 'sidebar.calendar', path: '/calendar' },
+  { icon: AnimatedMessageCircle, labelKey: 'sidebar.chat', path: '/chat' },
+  { icon: AnimatedBarChart, labelKey: 'sidebar.analytics', path: '/analytics' },
+  { icon: AnimatedActivity, labelKey: 'sidebar.activity', path: '/activity' },
+  { icon: AnimatedSettings, labelKey: 'sidebar.settings', path: '/settings' },
 ];
 
 export default function Sidebar({ open, onClose }) {
