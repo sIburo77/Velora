@@ -57,6 +57,7 @@ export default function Sidebar({ open, onClose }) {
   const [themeAnimating, setThemeAnimating] = useState(false);
   const navRef = useRef(null);
   const [indicatorStyle, setIndicatorStyle] = useState({});
+  const [hoveredPath, setHoveredPath] = useState(null);
   const wsListRef = useRef(null);
   const [wsHeight, setWsHeight] = useState(0);
 
@@ -222,13 +223,15 @@ export default function Sidebar({ open, onClose }) {
               <button
                 key={path}
                 onClick={() => handleNav(path)}
+                onMouseEnter={() => setHoveredPath(path)}
+                onMouseLeave={() => setHoveredPath(null)}
                 className={`relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors duration-200 ${
                   isActive
                     ? 'text-violet-400'
                     : 'text-content-secondary hover:text-content-primary hover:bg-surface-glass'
                 }`}
               >
-                <Icon size={18} />
+                <Icon size={18} animate={hoveredPath === path} />
                 {t(labelKey)}
               </button>
             );
