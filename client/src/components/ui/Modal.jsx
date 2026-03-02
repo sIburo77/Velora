@@ -6,9 +6,9 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' })
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center">
+    <div className="fixed inset-0 z-40 flex items-end sm:items-center justify-center">
       <div className="absolute inset-0 bg-[var(--color-overlay)] backdrop-blur-sm" onClick={onClose} />
-      <div className={`relative z-50 w-full ${sizes[size] || sizes.md} mx-4 glass rounded-2xl p-6 max-h-[90vh] overflow-y-auto`}>
+      <div className={`relative z-50 w-full ${sizes[size] || sizes.md} mx-0 sm:mx-4 glass rounded-t-2xl sm:rounded-2xl p-4 sm:p-6 max-h-[85vh] sm:max-h-[90vh] overflow-y-auto`}>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold">{title}</h3>
           <button onClick={onClose} className="p-1 rounded-lg hover:bg-surface-glass transition">

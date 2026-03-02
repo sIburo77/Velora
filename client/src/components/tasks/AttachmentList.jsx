@@ -89,7 +89,7 @@ export default function AttachmentList({ workspaceId, taskId, canEdit }) {
                 <span className="text-sm truncate">{a.filename}</span>
                 <span className="text-xs text-content-muted shrink-0">{formatSize(a.size_bytes)}</span>
               </div>
-              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
+              <div className="flex items-center gap-1 sm:opacity-0 sm:group-hover:opacity-100">
                 <button
                   onClick={() => download(a)}
                   className="p-1 rounded hover:bg-surface-glass text-content-secondary"

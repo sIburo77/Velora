@@ -42,27 +42,27 @@ export default function Landing() {
           </div>
         </nav>
 
-        <div className="relative z-10 max-w-4xl mx-auto text-center px-6 pt-20 pb-32">
+        <div className="relative z-10 max-w-4xl mx-auto text-center px-4 sm:px-6 pt-10 sm:pt-20 pb-16 sm:pb-32">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass text-sm text-violet-500 dark:text-violet-300 mb-8">
             <Zap size={14} /> {t('landing.badge')}
           </div>
-          <h2 className="text-5xl lg:text-7xl font-extrabold leading-tight mb-6">
+          <h2 className="text-3xl sm:text-5xl lg:text-7xl font-extrabold leading-tight mb-6">
             {t('landing.title1')}<br />
             <span className="glow-text">{t('landing.title2')}</span>
           </h2>
-          <p className="text-lg text-content-secondary max-w-2xl mx-auto mb-10">
+          <p className="text-base sm:text-lg text-content-secondary max-w-2xl mx-auto mb-10">
             {t('landing.subtitle')}
           </p>
-          <div className="flex items-center justify-center gap-4">
+          <div className="flex flex-wrap items-center justify-center gap-3">
             <button
               onClick={() => navigate('/register')}
-              className="btn-primary text-base flex items-center gap-2 px-8 py-3"
+              className="btn-primary text-sm sm:text-base flex items-center gap-2 px-5 sm:px-8 py-3"
             >
               {t('landing.startFree')} <ArrowRight size={18} />
             </button>
             <button
               onClick={() => navigate('/login')}
-              className="btn-secondary text-base px-8 py-3"
+              className="btn-secondary text-sm sm:text-base px-5 sm:px-8 py-3"
             >
               {t('landing.signIn')}
             </button>
@@ -71,8 +71,8 @@ export default function Landing() {
       </header>
 
       {/* Features */}
-      <section className="relative max-w-6xl mx-auto px-6 py-24">
-        <div className="text-center mb-16">
+      <section className="relative max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-24">
+        <div className="text-center mb-8 sm:mb-16">
           <h3 className="text-3xl font-bold mb-4">{t('landing.featuresTitle')}</h3>
           <p className="text-content-secondary">{t('landing.featuresSubtitle')}</p>
         </div>
@@ -90,10 +90,10 @@ export default function Landing() {
       </section>
 
       {/* CTA */}
-      <section className="relative max-w-4xl mx-auto px-6 pb-24">
-        <div className="card text-center py-16 relative overflow-hidden">
+      <section className="relative max-w-4xl mx-auto px-4 sm:px-6 pb-12 sm:pb-24">
+        <div className="card text-center py-8 sm:py-16 relative overflow-hidden">
           <div className="absolute inset-0 bg-hero-gradient opacity-5" />
-          <h3 className="relative text-3xl font-bold mb-4">{t('landing.ctaTitle')}</h3>
+          <h3 className="relative text-2xl sm:text-3xl font-bold mb-4">{t('landing.ctaTitle')}</h3>
           <p className="relative text-content-secondary mb-8">{t('landing.ctaSubtitle')}</p>
           <button
             onClick={() => navigate('/register')}

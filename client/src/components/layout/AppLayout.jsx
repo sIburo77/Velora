@@ -34,7 +34,7 @@ export default function AppLayout() {
 
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-      <main ref={mainRef} className="flex-1 overflow-y-auto p-6 pt-20 md:pt-6 page-enter">
+      <main ref={mainRef} className="flex-1 overflow-y-auto p-3 sm:p-6 pt-20 md:pt-6 page-enter">
         <Outlet />
       </main>
     </div>

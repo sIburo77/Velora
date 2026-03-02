@@ -203,7 +203,7 @@ export default function Analytics() {
                 )}
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{m.user_name}</p>
-                  <div className="flex items-center gap-3 text-xs text-content-secondary mt-0.5">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-content-secondary mt-0.5">
                     <span>{m.tasks_created} {t('analytics.tasksCreated')}</span>
                     <span>{m.tasks_completed} {t('analytics.tasksCompleted')}</span>
                   </div>
