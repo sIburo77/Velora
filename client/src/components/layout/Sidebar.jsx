@@ -1,16 +1,7 @@
 import { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import {
-  LogOut,
-  Plus,
-  ChevronDown,
-  Sun,
-  Moon,
-  Globe,
-  X,
-  Users,
-} from 'lucide-react';
+import { X } from 'lucide-react';
 import {
   AnimatedLayoutDashboard,
   AnimatedKanban,
@@ -19,6 +10,13 @@ import {
   AnimatedBarChart,
   AnimatedActivity,
   AnimatedSettings,
+  AnimatedSun,
+  AnimatedMoon,
+  AnimatedLogOut,
+  AnimatedUsers,
+  AnimatedPlus,
+  AnimatedGlobe,
+  AnimatedChevronDown,
 } from '../icons/AnimatedIcons';
 import { useAuth } from '../../context/AuthContext';
 import { useWorkspace } from '../../context/WorkspaceContext';
@@ -58,6 +56,7 @@ export default function Sidebar({ open, onClose }) {
   const navRef = useRef(null);
   const [indicatorStyle, setIndicatorStyle] = useState({});
   const [hoveredPath, setHoveredPath] = useState(null);
+  const [hoveredBtn, setHoveredBtn] = useState(null);
   const wsListRef = useRef(null);
   const [wsHeight, setWsHeight] = useState(0);
 
@@ -171,7 +170,9 @@ export default function Sidebar({ open, onClose }) {
               )}
               <span className="text-sm font-medium truncate">{currentWorkspace?.name || t('sidebar.select')}</span>
             </div>
-            <ChevronDown size={16} className={`transition text-content-muted ${showWs ? 'rotate-180' : ''}`} />
+            <span className={`transition text-content-muted ${showWs ? 'rotate-180' : ''}`}>
+              <AnimatedChevronDown size={16} animate={showWs} />
+            </span>
           </button>
 
           <div
@@ -196,17 +197,21 @@ export default function Sidebar({ open, onClose }) {
             ))}
             <button
               onClick={() => { setShowCreate(true); setShowWs(false); }}
+              onMouseEnter={() => setHoveredBtn('newWs')}
+              onMouseLeave={() => setHoveredBtn(null)}
               className="w-full flex items-center gap-2 px-3 py-2 text-sm text-violet-400 hover:bg-surface-glass transition border-t border-[var(--color-border)]"
             >
-              <Plus size={14} /> {t('sidebar.newWorkspace')}
+              <AnimatedPlus size={14} animate={hoveredBtn === 'newWs'} /> {t('sidebar.newWorkspace')}
             </button>
           </div>
           {currentWorkspace && (
             <button
               onClick={() => setShowMembers(true)}
+              onMouseEnter={() => setHoveredBtn('members')}
+              onMouseLeave={() => setHoveredBtn(null)}
               className="w-full flex items-center gap-2 px-3 py-2 mt-2 rounded-xl text-sm text-content-secondary hover:text-violet-400 hover:bg-violet-500/10 transition"
             >
-              <Users size={16} /> {t('members.title')}
+              <AnimatedUsers size={16} animate={hoveredBtn === 'members'} /> {t('members.title')}
             </button>
           )}
         </div>
@@ -255,25 +260,31 @@ export default function Sidebar({ open, onClose }) {
           </div>
           <button
             onClick={handleToggleTheme}
+            onMouseEnter={() => setHoveredBtn('theme')}
+            onMouseLeave={() => setHoveredBtn(null)}
             className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-content-secondary hover:text-violet-400 hover:bg-violet-500/10 transition"
           >
             <span className={`inline-flex transition-transform duration-500 ${themeAnimating ? 'rotate-[360deg] scale-125' : 'rotate-0 scale-100'}`}>
-              {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+              {theme === 'dark' ? <AnimatedSun size={16} animate={hoveredBtn === 'theme'} /> : <AnimatedMoon size={16} animate={hoveredBtn === 'theme'} />}
             </span>
             {theme === 'dark' ? t('common.lightMode') : t('common.darkMode')}
           </button>
           <button
             onClick={toggleLang}
+            onMouseEnter={() => setHoveredBtn('lang')}
+            onMouseLeave={() => setHoveredBtn(null)}
             className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-content-secondary hover:text-violet-400 hover:bg-violet-500/10 transition"
           >
-            <Globe size={16} />
+            <AnimatedGlobe size={16} animate={hoveredBtn === 'lang'} />
             {i18n.language === 'ru' ? 'English' : 'Русский'}
           </button>
           <button
             onClick={handleLogout}
+            onMouseEnter={() => setHoveredBtn('logout')}
+            onMouseLeave={() => setHoveredBtn(null)}
             className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-content-secondary hover:text-red-400 hover:bg-red-500/10 transition"
           >
-            <LogOut size={16} /> {t('sidebar.logout')}
+            <AnimatedLogOut size={16} animate={hoveredBtn === 'logout'} /> {t('sidebar.logout')}
           </button>
         </div>
       </aside>

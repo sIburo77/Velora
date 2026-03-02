@@ -133,3 +133,135 @@ export function AnimatedCalendarDays({ size = 18, animate }) {
     </motion.svg>
   );
 }
+
+// ─── Sun (rays draw sequentially) ───────────────────────────────────
+export function AnimatedSun({ size = 16, animate }) {
+  const c = useControlled(animate);
+  const ray = (i) => ({
+    initial: { opacity: 1, scale: 1 },
+    animate: { opacity: [0, 1], pathLength: [0, 1], transition: { duration: 0.6, ease: 'easeInOut', delay: i * 0.08 } },
+  });
+  return (
+    <motion.svg {...svgProps} width={size} height={size} viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="4" />
+      <motion.line x1="12" y1="4" x2="12" y2="2" variants={ray(0)} initial="initial" animate={c} />
+      <motion.line x1="17.7" y1="6.3" x2="19.1" y2="4.9" variants={ray(1)} initial="initial" animate={c} />
+      <motion.line x1="20" y1="12" x2="22" y2="12" variants={ray(2)} initial="initial" animate={c} />
+      <motion.line x1="17.7" y1="17.7" x2="19.1" y2="19.1" variants={ray(3)} initial="initial" animate={c} />
+      <motion.line x1="12" y1="20" x2="12" y2="22" variants={ray(4)} initial="initial" animate={c} />
+      <motion.line x1="6.3" y1="17.7" x2="4.9" y2="19.1" variants={ray(5)} initial="initial" animate={c} />
+      <motion.line x1="4" y1="12" x2="2" y2="12" variants={ray(6)} initial="initial" animate={c} />
+      <motion.line x1="6.3" y1="6.3" x2="4.9" y2="4.9" variants={ray(7)} initial="initial" animate={c} />
+    </motion.svg>
+  );
+}
+
+// ─── Moon (wobble rotation) ─────────────────────────────────────────
+export function AnimatedMoon({ size = 16, animate }) {
+  const c = useControlled(animate);
+  return (
+    <motion.svg {...svgProps} width={size} height={size} viewBox="0 0 24 24">
+      <motion.path
+        d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"
+        variants={{
+          initial: { rotate: 0, transition: { duration: 0.5, ease: 'easeInOut' } },
+          animate: { rotate: [0, -30, 25, -15, 10, -5, 0], transition: { duration: 1.2, ease: 'easeInOut' } },
+        }}
+        initial="initial"
+        animate={c}
+      />
+    </motion.svg>
+  );
+}
+
+// ─── LogOut (arrow slides right) ────────────────────────────────────
+export function AnimatedLogOut({ size = 16, animate }) {
+  const c = useControlled(animate);
+  return (
+    <motion.svg {...svgProps} width={size} height={size} viewBox="0 0 24 24">
+      <motion.g variants={{ initial: { x: 0, transition: { duration: 0.3, ease: 'easeInOut' } }, animate: { x: 2, transition: { duration: 0.3, ease: 'easeInOut' } } }} initial="initial" animate={c}>
+        <path d="m16 17 5-5-5-5" />
+        <path d="M21 12H9" />
+      </motion.g>
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+    </motion.svg>
+  );
+}
+
+// ─── Users (bounce) ─────────────────────────────────────────────────
+export function AnimatedUsers({ size = 16, animate }) {
+  const c = useControlled(animate);
+  const v = (delay) => ({
+    initial: { y: 0 },
+    animate: { y: [0, 2, -2, 0], transition: { duration: 0.6, ease: 'easeInOut', delay } },
+  });
+  return (
+    <motion.svg {...svgProps} width={size} height={size} viewBox="0 0 24 24">
+      <motion.path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" variants={v(0.1)} initial="initial" animate={c} />
+      <motion.path d="M16 3.128a4 4 0 0 1 0 7.744" variants={v(0)} initial="initial" animate={c} />
+      <motion.path d="M22 21v-2a4 4 0 0 0-3-3.87" variants={v(0)} initial="initial" animate={c} />
+      <motion.circle cx={9} cy={7} r={4} variants={v(0.1)} initial="initial" animate={c} />
+    </motion.svg>
+  );
+}
+
+// ─── Plus (rotate 90°) ──────────────────────────────────────────────
+export function AnimatedPlus({ size = 14, animate }) {
+  const c = useControlled(animate);
+  return (
+    <motion.svg {...svgProps} width={size} height={size} viewBox="0 0 24 24">
+      <motion.line x1={12} y1={19} x2={12} y2={5} variants={{ initial: { rotate: 0, transition: { ease: 'easeInOut', duration: 0.4 } }, animate: { rotate: 90, transition: { ease: 'easeInOut', duration: 0.4, delay: 0.1 } } }} initial="initial" animate={c} />
+      <motion.line x1={5} y1={12} x2={19} y2={12} variants={{ initial: { rotate: 0, transition: { ease: 'easeInOut', duration: 0.4 } }, animate: { rotate: 90, transition: { ease: 'easeInOut', duration: 0.4 } } }} initial="initial" animate={c} />
+    </motion.svg>
+  );
+}
+
+// ─── Globe (spin) ───────────────────────────────────────────────────
+export function AnimatedGlobe({ size = 16, animate }) {
+  const c = useControlled(animate);
+  return (
+    <motion.svg {...svgProps} width={size} height={size} viewBox="0 0 24 24">
+      <motion.g
+        variants={{
+          initial: { rotateY: 0, transition: { duration: 0.6, ease: 'easeInOut' } },
+          animate: { rotateY: 360, transition: { duration: 0.8, ease: 'easeInOut' } },
+        }}
+        initial="initial"
+        animate={c}
+      >
+        <circle cx="12" cy="12" r="10" />
+        <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
+        <path d="M2 12h20" />
+      </motion.g>
+    </motion.svg>
+  );
+}
+
+// ─── Bell (ring wobble) ─────────────────────────────────────────────
+export function AnimatedBell({ size = 18, animate }) {
+  const c = useControlled(animate);
+  return (
+    <motion.svg {...svgProps} width={size} height={size} viewBox="0 0 24 24"
+      style={{ transformOrigin: 'top center' }}
+      variants={{ initial: { rotate: 0 }, animate: { rotate: [0, 20, -10, 10, -5, 3, 0], transition: { duration: 0.9, ease: 'easeInOut' } } }}
+      initial="initial" animate={c}
+    >
+      <motion.path
+        d="M10.268 21a2 2 0 0 0 3.464 0"
+        variants={{ initial: { x: 0 }, animate: { x: [0, -6, 5, -5, 4, -3, 2, 0], transition: { duration: 1.1, ease: 'easeInOut' } } }}
+        initial="initial" animate={c}
+      />
+      <path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326" />
+    </motion.svg>
+  );
+}
+
+// ─── ChevronDown (bounce down) ──────────────────────────────────────
+export function AnimatedChevronDown({ size = 16, animate }) {
+  const c = useControlled(animate);
+  return (
+    <motion.svg {...svgProps} width={size} height={size} viewBox="0 0 24 24">
+      <motion.path d="m6 9 6 6 6-6" variants={{ initial: { y: 0, transition: { duration: 0.3, ease: 'easeInOut' } }, animate: { y: 4, transition: { duration: 0.3, ease: 'easeInOut' } } }} initial="initial" animate={c} />
+    </motion.svg>
+  );
+}
