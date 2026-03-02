@@ -94,6 +94,7 @@ class WorkspaceService:
                 joined_at=m.joined_at,
                 user_email=m.user.email if m.user else None,
                 user_name=m.user.name if m.user else None,
+                avatar_url=m.user.avatar_url if m.user else None,
             )
             for m in members
         ]
@@ -121,6 +122,9 @@ class WorkspaceService:
             user_id=member.user_id,
             role=member.role,
             joined_at=member.joined_at,
+            user_email=member.user.email if member.user else None,
+            user_name=member.user.name if member.user else None,
+            avatar_url=member.user.avatar_url if member.user else None,
         )
 
     async def remove_member(

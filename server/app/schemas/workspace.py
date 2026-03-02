@@ -34,5 +34,6 @@ class WorkspaceMemberResponse(BaseModel):
     joined_at: datetime
     user_email: str | None = None
     user_name: str | None = None
+    avatar_url: str | None = None
 
     model_config = {"from_attributes": True}
