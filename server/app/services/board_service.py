@@ -252,6 +252,8 @@ class BoardService:
         deadline_from: "datetime | None" = None,
         deadline_to: "datetime | None" = None,
         assigned_to: "str | None" = None,
+        limit: int = 50,
+        offset: int = 0,
     ) -> list[TaskResponse]:
         await self._check_membership(workspace_id, user_id)
         board = await self.board_repo.get_by_workspace(workspace_id)
@@ -260,7 +262,7 @@ class BoardService:
         tasks = await self.board_repo.search_tasks(
             board.id, query=query, priority=priority, is_completed=is_completed,
             has_deadline=has_deadline, deadline_from=deadline_from, deadline_to=deadline_to,
-            assigned_to=assigned_to,
+            assigned_to=assigned_to, limit=limit, offset=offset,
         )
         return [TaskResponse.model_validate(t) for t in tasks]
 

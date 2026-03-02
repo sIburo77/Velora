@@ -144,12 +144,14 @@ async def search_tasks(
     deadline_from: datetime | None = Query(None),
     deadline_to: datetime | None = Query(None),
     assigned_to: str | None = Query(None),
+    limit: int = Query(50, le=200),
+    offset: int = Query(0),
 ):
     return await service.search_tasks(
         workspace_id, user_id, query=q, priority=priority,
         is_completed=is_completed, has_deadline=has_deadline,
         deadline_from=deadline_from, deadline_to=deadline_to,
-        assigned_to=assigned_to,
+        assigned_to=assigned_to, limit=limit, offset=offset,
     )
 
 

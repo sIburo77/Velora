@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.core.security import decode_access_token
-from app.core.database import get_db
+from app.core.database import async_session_maker
 from app.api.routes import auth, users, workspaces, invitations, boards
 from app.api.routes import comments, attachments, chat, notifications, tags, activity_logs
 from app.ws_manager import manager
@@ -68,38 +68,43 @@ async def ws_chat(websocket: WebSocket, workspace_id: uuid.UUID, token: str = Qu
         await websocket.close(code=4001)
         return
 
-    async for db in get_db():
+    # Check membership with a short-lived session
+    async with async_session_maker() as db:
         workspace_repo = WorkspaceRepository(db)
         member = await workspace_repo.get_member(workspace_id, user_id)
         if not member:
             await websocket.close(code=4003)
             return
 
-        await manager.connect_chat(workspace_id, user_id, websocket)
-        chat_repo = ChatRepository(db)
+    await manager.connect_chat(workspace_id, user_id, websocket)
 
-        try:
-            while True:
-                data = await websocket.receive_json()
-                content = data.get("content", "").strip()
-                file_url = data.get("file_url")
-                file_name = data.get("file_name")
-                reply_to_id = data.get("reply_to_id")
-                if not content and not file_url:
-                    continue
+    try:
+        while True:
+            data = await websocket.receive_json()
+            content = data.get("content", "").strip()
+            file_url = data.get("file_url")
+            file_name = data.get("file_name")
+            reply_to_id = data.get("reply_to_id")
+            if not content and not file_url:
+                continue
 
-                reply_uuid = None
-                if reply_to_id:
-                    try:
-                        reply_uuid = uuid.UUID(reply_to_id)
-                    except (ValueError, TypeError):
-                        pass
+            reply_uuid = None
+            if reply_to_id:
+                try:
+                    reply_uuid = uuid.UUID(reply_to_id)
+                except (ValueError, TypeError):
+                    pass
 
+            # Create message with a per-operation session
+            async with async_session_maker() as db:
+                chat_repo = ChatRepository(db)
                 msg = await chat_repo.create(
                     workspace_id, user_id, content or "",
                     file_url=file_url, file_name=file_name,
                     reply_to_id=reply_uuid,
                 )
+                await db.commit()
+
                 await manager.broadcast_chat(workspace_id, {
                     "id": str(msg.id),
                     "workspace_id": str(msg.workspace_id),
@@ -120,6 +125,7 @@ async def ws_chat(websocket: WebSocket, workspace_id: uuid.UUID, token: str = Qu
                     mentioned_names = re.findall(r'@([A-Za-zА-Яа-яёЁ][\w\s]*?)(?=\s@|[.,!?;:\n]|$)', content)
                     if mentioned_names:
                         notification_repo = NotificationRepository(db)
+                        workspace_repo = WorkspaceRepository(db)
                         members = await workspace_repo.get_members(workspace_id)
                         author_name = msg.author.name if msg.author else "Someone"
                         for m in members:
@@ -134,10 +140,11 @@ async def ws_chat(websocket: WebSocket, workspace_id: uuid.UUID, token: str = Qu
                                             workspace_id=workspace_id,
                                         )
                                         break
-        except WebSocketDisconnect:
-            manager.disconnect_chat(workspace_id, user_id, websocket)
-        except Exception:
-            manager.disconnect_chat(workspace_id, user_id, websocket)
+                        await db.commit()
+    except WebSocketDisconnect:
+        manager.disconnect_chat(workspace_id, user_id, websocket)
+    except Exception:
+        manager.disconnect_chat(workspace_id, user_id, websocket)
 
 
 @app.websocket("/ws/notifications")
@@ -164,21 +171,22 @@ async def ws_board(websocket: WebSocket, workspace_id: uuid.UUID, token: str = Q
         await websocket.close(code=4001)
         return
 
-    async for db in get_db():
+    # Check membership with a short-lived session
+    async with async_session_maker() as db:
         workspace_repo = WorkspaceRepository(db)
         member = await workspace_repo.get_member(workspace_id, user_id)
         if not member:
             await websocket.close(code=4003)
             return
 
-        await manager.connect_board(workspace_id, user_id, websocket)
-        try:
-            while True:
-                await websocket.receive_text()
-        except WebSocketDisconnect:
-            manager.disconnect_board(workspace_id, user_id, websocket)
-        except Exception:
-            manager.disconnect_board(workspace_id, user_id, websocket)
+    await manager.connect_board(workspace_id, user_id, websocket)
+    try:
+        while True:
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        manager.disconnect_board(workspace_id, user_id, websocket)
+    except Exception:
+        manager.disconnect_board(workspace_id, user_id, websocket)
 
 
 @app.get("/api/health")

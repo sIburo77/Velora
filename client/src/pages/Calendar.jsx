@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useWorkspace } from '../context/WorkspaceContext';
@@ -45,13 +45,16 @@ export default function Calendar() {
   for (let i = 0; i < offset; i++) cells.push(null);
   for (let d = 1; d <= daysInMonth; d++) cells.push(d);
 
-  const tasksByDay = {};
-  tasks.forEach((t) => {
-    if (!t.deadline) return;
-    const d = new Date(t.deadline).getDate();
-    if (!tasksByDay[d]) tasksByDay[d] = [];
-    tasksByDay[d].push(t);
-  });
+  const tasksByDay = useMemo(() => {
+    const result = {};
+    tasks.forEach((t) => {
+      if (!t.deadline) return;
+      const d = new Date(t.deadline).getDate();
+      if (!result[d]) result[d] = [];
+      result[d].push(t);
+    });
+    return result;
+  }, [tasks]);
 
   const today = new Date();
   const isToday = (d) =>
