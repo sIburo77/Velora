@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { X } from 'lucide-react';
+import { X, ChevronLeft } from 'lucide-react';
 import {
   AnimatedLayoutDashboard,
   AnimatedKanban,
@@ -38,7 +38,7 @@ const navItems = [
   { icon: AnimatedSettings, labelKey: 'sidebar.settings', path: '/settings' },
 ];
 
-export default function Sidebar({ open, onClose }) {
+export default function Sidebar({ open, onClose, desktopHidden = false, onDesktopHide = () => {} }) {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
@@ -133,8 +133,9 @@ export default function Sidebar({ open, onClose }) {
       <aside
         className={`
           fixed inset-y-0 left-0 z-50 w-64 flex flex-col border-r border-[var(--color-border)] bg-surface-sidebar
-          transition-transform duration-300 ease-in-out
+          transition-all duration-300 ease-in-out
           md:static md:translate-x-0
+          ${desktopHidden ? 'md:w-0 md:min-w-0 md:overflow-hidden md:border-r-0 md:opacity-0 md:pointer-events-none' : 'md:w-64 md:opacity-100'}
           ${open ? 'translate-x-0' : '-translate-x-full'}
         `}
       >
@@ -142,6 +143,14 @@ export default function Sidebar({ open, onClose }) {
         <div className="p-6 pb-4 flex items-center justify-between">
           <h1 className="text-xl font-bold glow-text">Velora</h1>
           <div className="flex items-center gap-1">
+            <button
+              onClick={onDesktopHide}
+              className="hidden md:inline-flex p-1 rounded-lg hover:bg-surface-glass transition"
+              aria-label="Hide sidebar"
+              title="Hide sidebar"
+            >
+              <ChevronLeft size={18} />
+            </button>
             <NotificationBell onClick={() => setShowNotif(!showNotif)} active={showNotif} />
             <button onClick={onClose} className="p-1 rounded-lg hover:bg-surface-glass transition md:hidden">
               <X size={20} />

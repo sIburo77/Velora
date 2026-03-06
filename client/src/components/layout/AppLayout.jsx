@@ -5,6 +5,10 @@ import Sidebar from './Sidebar';
 
 export default function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [desktopSidebarHidden, setDesktopSidebarHidden] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return localStorage.getItem('velora_sidebar_hidden') === '1';
+  });
   const location = useLocation();
   const mainRef = useRef(null);
 
@@ -16,6 +20,10 @@ export default function AppLayout() {
       mainRef.current.scrollTo(0, 0);
     }
   }, [location.pathname]);
+
+  useEffect(() => {
+    localStorage.setItem('velora_sidebar_hidden', desktopSidebarHidden ? '1' : '0');
+  }, [desktopSidebarHidden]);
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -32,7 +40,23 @@ export default function AppLayout() {
         </div>
       </div>
 
-      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      {desktopSidebarHidden && (
+        <button
+          onClick={() => setDesktopSidebarHidden(false)}
+          className="hidden md:flex fixed top-4 left-4 z-30 p-2 rounded-xl border border-[var(--color-border)] bg-surface-sidebar hover:bg-surface-glass transition"
+          aria-label="Show sidebar"
+          title="Show sidebar"
+        >
+          <Menu size={18} />
+        </button>
+      )}
+
+      <Sidebar
+        open={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        desktopHidden={desktopSidebarHidden}
+        onDesktopHide={() => setDesktopSidebarHidden(true)}
+      />
 
       <main ref={mainRef} className="flex-1 overflow-y-auto p-3 sm:p-6 pt-20 md:pt-6 page-enter">
         <Outlet />
