@@ -35,7 +35,6 @@ const navItems = [
   { icon: AnimatedMessageCircle, labelKey: 'sidebar.chat', path: '/chat' },
   { icon: AnimatedBarChart, labelKey: 'sidebar.analytics', path: '/analytics' },
   { icon: AnimatedActivity, labelKey: 'sidebar.activity', path: '/activity' },
-  { icon: AnimatedSettings, labelKey: 'sidebar.settings', path: '/settings' },
 ];
 
 export default function Sidebar({ open, onClose, desktopHidden = false, onDesktopHide = () => {} }) {
@@ -267,6 +266,18 @@ export default function Sidebar({ open, onClose, desktopHidden = false, onDeskto
               <p className="text-xs text-content-muted truncate">{user?.email}</p>
             </div>
           </div>
+          <button
+            onClick={() => handleNav('/settings')}
+            onMouseEnter={() => setHoveredBtn('settings')}
+            onMouseLeave={() => setHoveredBtn(null)}
+            className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm transition ${
+              location.pathname === '/settings'
+                ? 'text-violet-400 bg-violet-500/15'
+                : 'text-content-secondary hover:text-violet-400 hover:bg-violet-500/10'
+            }`}
+          >
+            <AnimatedSettings size={16} animate={hoveredBtn === 'settings'} /> {t('sidebar.settings')}
+          </button>
           <button
             onClick={handleToggleTheme}
             onMouseEnter={() => setHoveredBtn('theme')}
