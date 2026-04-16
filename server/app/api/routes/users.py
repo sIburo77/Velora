@@ -20,6 +20,18 @@ async def get_profile(
     user_id: uuid.UUID = Depends(get_current_user_id),
     service: UserService = Depends(get_user_service),
 ):
+    """Возвращает профиль текущего пользователя.
+
+    Доступ: аутентифицированный пользователь.
+
+    :param user_id: Идентификатор пользователя (из JWT-токена).
+    :type user_id: uuid.UUID
+    :return: Данные профиля пользователя.
+    :rtype: UserResponse
+    :raises 401: Пользователь не аутентифицирован.
+
+    HTTP метод: GET
+    """
     return await service.get_profile(user_id)
 
 
@@ -29,6 +41,17 @@ async def update_profile(
     user_id: uuid.UUID = Depends(get_current_user_id),
     service: UserService = Depends(get_user_service),
 ):
+    """Обновляет профиль текущего пользователя.
+
+    Позволяет изменить имя пользователя.
+
+    :param data: Объект с обновляемыми полями (name).
+    :type data: UserUpdate
+    :return: Обновлённые данные профиля.
+    :rtype: UserResponse
+
+    HTTP метод: PATCH
+    """
     return await service.update_profile(user_id, data)
 
 
@@ -38,6 +61,18 @@ async def upload_avatar(
     user_id: uuid.UUID = Depends(get_current_user_id),
     service: UserService = Depends(get_user_service),
 ):
+    """Загружает аватар пользователя.
+
+    Принимает файл изображения (JPEG, PNG, GIF, WebP), максимальный размер — 10 МБ.
+
+    :param file: Загружаемый файл изображения.
+    :type file: UploadFile
+    :return: Обновлённые данные профиля с новым avatar_url.
+    :rtype: UserResponse
+    :raises 400: Неподдерживаемый формат или файл слишком большой.
+
+    HTTP метод: POST
+    """
     if file.content_type not in ALLOWED_IMAGE_TYPES:
         raise HTTPException(400, "Only JPEG, PNG, GIF, WebP images are allowed")
     content = await file.read()
@@ -61,11 +96,30 @@ async def delete_avatar(
     user_id: uuid.UUID = Depends(get_current_user_id),
     service: UserService = Depends(get_user_service),
 ):
+    """Удаляет аватар пользователя.
+
+    :return: Обновлённые данные профиля с avatar_url = null.
+    :rtype: UserResponse
+
+    HTTP метод: DELETE
+    """
     return await service.update_avatar(user_id, None)
 
 
 @router.get("/avatars/{filename}")
 async def serve_avatar(filename: str):
+    """Отдаёт файл аватара пользователя.
+
+    Публичный эндпоинт, не требует аутентификации.
+
+    :param filename: Имя файла аватара.
+    :type filename: str
+    :return: Файл изображения.
+    :rtype: FileResponse
+    :raises 404: Файл не найден.
+
+    HTTP метод: GET
+    """
     path = os.path.join(settings.UPLOAD_DIR, "avatars", "users", filename)
     if not os.path.isfile(path):
         raise HTTPException(404, "Not found")
@@ -77,5 +131,15 @@ async def delete_account(
     user_id: uuid.UUID = Depends(get_current_user_id),
     service: UserService = Depends(get_user_service),
 ):
+    """Удаляет аккаунт текущего пользователя.
+
+    Каскадно удаляет все связанные данные (членства, уведомления).
+
+    :return: Подтверждение удаления.
+    :rtype: dict
+    :raises 401: Пользователь не аутентифицирован.
+
+    HTTP метод: DELETE
+    """
     await service.delete_account(user_id)
     return {"detail": "Account deleted"}

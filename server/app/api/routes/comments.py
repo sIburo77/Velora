@@ -19,6 +19,19 @@ async def get_comments(
     user_id: uuid.UUID = Depends(get_current_user_id),
     service: CommentService = Depends(get_comment_service),
 ):
+    """Возвращает список комментариев к задаче.
+
+    Доступ: участник рабочего пространства.
+
+    :param workspace_id: Идентификатор рабочего пространства.
+    :type workspace_id: uuid.UUID
+    :param task_id: Идентификатор задачи.
+    :type task_id: uuid.UUID
+    :return: Список комментариев с информацией об авторе.
+    :rtype: list[CommentResponse]
+
+    HTTP метод: GET
+    """
     return await service.get_comments(workspace_id, task_id, user_id)
 
 
@@ -30,6 +43,15 @@ async def create_comment(
     user_id: uuid.UUID = Depends(get_current_user_id),
     service: CommentService = Depends(get_comment_service),
 ):
+    """Создаёт комментарий к задаче.
+
+    :param data: Объект с полем content (текст комментария).
+    :type data: CommentCreate
+    :return: Созданный комментарий.
+    :rtype: CommentResponse
+
+    HTTP метод: POST
+    """
     return await service.create_comment(workspace_id, task_id, data, user_id)
 
 
@@ -40,5 +62,18 @@ async def delete_comment(
     user_id: uuid.UUID = Depends(get_current_user_id),
     service: CommentService = Depends(get_comment_service),
 ):
+    """Удаляет комментарий.
+
+    Удалить может только автор комментария.
+
+    :param comment_id: Идентификатор комментария.
+    :type comment_id: uuid.UUID
+    :return: Подтверждение удаления.
+    :rtype: dict
+    :raises 403: Нет прав на удаление.
+    :raises 404: Комментарий не найден.
+
+    HTTP метод: DELETE
+    """
     await service.delete_comment(workspace_id, comment_id, user_id)
     return {"detail": "Comment deleted"}

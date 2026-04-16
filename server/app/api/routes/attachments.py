@@ -20,6 +20,15 @@ async def get_attachments(
     user_id: uuid.UUID = Depends(get_current_user_id),
     service: AttachmentService = Depends(get_attachment_service),
 ):
+    """Возвращает список вложений задачи.
+
+    :param task_id: Идентификатор задачи.
+    :type task_id: uuid.UUID
+    :return: Список вложений с именем файла, размером и MIME-типом.
+    :rtype: list[AttachmentResponse]
+
+    HTTP метод: GET
+    """
     return await service.get_attachments(workspace_id, task_id, user_id)
 
 
@@ -31,6 +40,18 @@ async def upload_attachment(
     user_id: uuid.UUID = Depends(get_current_user_id),
     service: AttachmentService = Depends(get_attachment_service),
 ):
+    """Загружает файловое вложение к задаче.
+
+    Максимальный размер файла — 10 МБ.
+
+    :param file: Загружаемый файл.
+    :type file: UploadFile
+    :return: Данные созданного вложения.
+    :rtype: AttachmentResponse
+    :raises 400: Файл слишком большой.
+
+    HTTP метод: POST
+    """
     file_data = await file.read()
     return await service.upload_file(
         workspace_id, task_id, user_id,
@@ -47,6 +68,18 @@ async def download_attachment(
     user_id: uuid.UUID = Depends(get_current_user_id),
     service: AttachmentService = Depends(get_attachment_service),
 ):
+    """Скачивает файловое вложение.
+
+    Возвращает файл с оригинальным именем и MIME-типом.
+
+    :param attachment_id: Идентификатор вложения.
+    :type attachment_id: uuid.UUID
+    :return: Файл вложения.
+    :rtype: FileResponse
+    :raises 404: Вложение не найдено.
+
+    HTTP метод: GET
+    """
     file_path, filename, content_type = await service.get_file_path(
         workspace_id, attachment_id, user_id
     )
@@ -60,5 +93,15 @@ async def delete_attachment(
     user_id: uuid.UUID = Depends(get_current_user_id),
     service: AttachmentService = Depends(get_attachment_service),
 ):
+    """Удаляет файловое вложение.
+
+    :param attachment_id: Идентификатор вложения.
+    :type attachment_id: uuid.UUID
+    :return: Подтверждение удаления.
+    :rtype: dict
+    :raises 404: Вложение не найдено.
+
+    HTTP метод: DELETE
+    """
     await service.delete_attachment(workspace_id, attachment_id, user_id)
     return {"detail": "Attachment deleted"}
